@@ -19,7 +19,6 @@
     - [Physician Account (ECE 513 only):](#physician-account-ece-513-only)
   - [Challenges and Lessons Learned](#challenges-and-lessons-learned)
   - [Team Contributions](#team-contributions)
-  - [References](#references)
 
 ---
 
@@ -123,27 +122,22 @@ Heart Track is a low-cost IoT-enabled web application for monitoring heart rate 
 
 ## Challenges and Lessons Learned
 - **Challenges**:
-  1. Synchronizing data between IoT devices and the web server.
-  2. Implementing secure authentication for users and physicians.
-  3. Debugging measurement inaccuracy due to sensor instability.
+  1. 
+  2. 
+  3. 
 
 - **Lessons Learned**:
-  1. Importance of secure API key management.
-  2. Effective use of RESTful APIs to streamline communication.
-  3. Utilizing responsive design for optimal user experience on different devices.
+  1. 
+  2. 
+  3. 
 
 ---
 
 ## Team Contributions
-| Team Member       | Frontend (%) | Backend (%) | Embedded (%) | Documentation (%) | Demos (%) |
+| Team Member  | Frontend (%) | Backend (%) | Embedded (%) | Documentation (%) | Demos (%) |
 |-------------------|--------------|-------------|--------------|-------------------|-----------|
-| Alex Romero        | 40           | 20          | 20           | 10                | 10        |
-| Mason Marrero      | 20           | 40          | 20           | 10                | 10        |
-| Dasol Ahn          | 20           | 20          | 40           | 10                | 10        |
+| Alex Romero  | 0 | 0 | 0 | 0 | 0 |
+| Mason Marrero| 0 | 0 | 0 | 0 | 0 |
+| Dasol Ahn    | 0 | 0 | 0 | 0 | 0 |
 
 ---
-
-## References
-- [GitHub Repo](https://github.com/your-repo)
-- [Third-party Libraries](reference.html)
-- [CWE Vulnerability List](https://cwe.mitre.org/)
