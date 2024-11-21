@@ -9,9 +9,19 @@ const userSchema = new mongoose.Schema({
 
 // Device Schema
 const deviceSchema = new mongoose.Schema({
-    deviceId: { type: String, required: true, unique: true, trim: true },
-    owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // References the user who owns this device
-    measurements: [{ type: mongoose.Schema.Types.ObjectId, ref: "Measurement" }], // References the measurements
+    deviceId: { 
+        type: String, 
+        required: true, 
+        unique: true, 
+        trim: true 
+    },
+    owner: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "User" 
+    }, // References the user who owns this device
+    measurements: [
+        { type: mongoose.Schema.Types.ObjectId, ref: "Measurement" }
+    ], // References the measurements
 });
 
 // Measurement Schema

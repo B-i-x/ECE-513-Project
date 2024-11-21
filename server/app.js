@@ -15,7 +15,6 @@ const { User, Device, Measurement } = require('./models/hearttrack'); // Update 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const devicesRouter = require('./routes/devices'); // For Heart Track devices
-const deviceRoutes = require('./routes/deviceRoutes'); // Additional device routes
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -37,13 +36,13 @@ app.use(express.urlencoded({ extended: true })); // For parsing URL-encoded data
 app.use(bodyParser.json()); // Ensure JSON body parsing
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Route Handlers
 app.use('/', indexRouter); // Handles main application routes
 app.use('/users', usersRouter); // Handles user-related operations
 app.use('/devices', devicesRouter); // Handles Heart Track device-related operations
-app.use('/device', deviceRoutes); // Additional device operations route
 
 // Catch 404 and forward to error handler
 app.use(function (req, res, next) {

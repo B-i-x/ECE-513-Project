@@ -34,9 +34,13 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// Get data for a specific device
-router.get('/data/:deviceId', async (req, res) => {
-    const { deviceId } = req.params;
+// Get data for a specific device using query parameters
+router.get('/data', async (req, res) => {
+    const { deviceId } = req.query;
+
+    if (!deviceId) {
+        return res.status(400).json({ message: "Device ID is required as a query parameter." });
+    }
 
     try {
         const device = await Device.findOne({ deviceId }).populate('measurements');
@@ -51,3 +55,4 @@ router.get('/data/:deviceId', async (req, res) => {
 });
 
 module.exports = router;
+
