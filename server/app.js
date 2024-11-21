@@ -33,7 +33,7 @@ app.use(function (req, res, next) {
 // Middleware
 app.use(logger('dev'));
 app.use(express.json()); // For parsing application/json
-app.use(express.urlencoded({ extended: false })); // For parsing URL-encoded data
+app.use(express.urlencoded({ extended: true })); // For parsing URL-encoded data
 app.use(bodyParser.json()); // Ensure JSON body parsing
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
