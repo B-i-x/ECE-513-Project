@@ -32,16 +32,6 @@ const measurementSchema = new mongoose.Schema({
     device: { type: mongoose.Schema.Types.ObjectId, ref: "Device" }, // References the device
 });
 
-// Middleware: Hash passwords before saving (for User schema)
-const bcrypt = require("bcrypt");
-userSchema.pre("save", async function (next) {
-    if (this.isModified("password")) {
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-    }
-    next();
-});
-
 // Create Models
 const User = mongoose.model("User", userSchema);
 const Device = mongoose.model("Device", deviceSchema);
