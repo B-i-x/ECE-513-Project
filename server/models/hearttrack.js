@@ -1,31 +1,51 @@
-const db = require("../db");
+const mongoose = require("../db"); // Assuming "../db" exports a mongoose instance
 
 // User Schema
-const userSchema = new db.Schema({
-    username: { type: String, required: true, unique: true },
+const userSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true, trim: true },
     password: { type: String, required: true }, // Store hashed passwords
-    devices: [{ type: db.Schema.Types.ObjectId, ref: "Device" }] // References to registered devices
+    devices: [{ type: mongoose.Schema.Types.ObjectId, ref: "Device" }], // References to registered devices
 });
 
 // Device Schema
-const deviceSchema = new db.Schema({
-    deviceId: { type: String, required: true, unique: true },
-    owner: { type: db.Schema.Types.ObjectId, ref: "User" }, // References the user who owns this device
-    measurements: [{ type: db.Schema.Types.ObjectId, ref: "Measurement" }] // References the measurements
+const deviceSchema = new mongoose.Schema({
+    deviceId: { type: String, required: true, unique: true, trim: true },
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // References the user who owns this device
+    measurements: [{ type: mongoose.Schema.Types.ObjectId, ref: "Measurement" }], // References the measurements
 });
 
 // Measurement Schema
-const measurementSchema = new db.Schema({
-    heartRate: { type: Number, required: true },
-    bloodOxygenSaturation: { type: Number, required: true },
+const measurementSchema = new mongoose.Schema({
+    heartRate: { 
+        type: Number, 
+        required: true,
+        min: [0, "Heart rate must be positive"], 
+        max: [300, "Heart rate exceeds normal range"] 
+    },
+    bloodOxygenSaturation: { 
+        type: Number, 
+        required: true, 
+        min: [0, "Blood oxygen must be positive"], 
+        max: [100, "Blood oxygen saturation exceeds normal range"] 
+    },
     timestamp: { type: Date, default: Date.now },
-    device: { type: db.Schema.Types.ObjectId, ref: "Device" } // References the device
+    device: { type: mongoose.Schema.Types.ObjectId, ref: "Device" }, // References the device
+});
+
+// Middleware: Hash passwords before saving (for User schema)
+const bcrypt = require("bcrypt");
+userSchema.pre("save", async function (next) {
+    if (this.isModified("password")) {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+    }
+    next();
 });
 
 // Create Models
-const User = db.model("User", userSchema);
-const Device = db.model("Device", deviceSchema);
-const Measurement = db.model("Measurement", measurementSchema);
+const User = mongoose.model("User", userSchema);
+const Device = mongoose.model("Device", deviceSchema);
+const Measurement = mongoose.model("Measurement", measurementSchema);
 
 module.exports = {
     User,
