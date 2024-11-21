@@ -87,8 +87,9 @@ function viewDeviceData() {
         return;
     }
 
+    // Use query parameters in the URL
     $.ajax({
-        url: `/devices/data/${$('#deviceId').val()}`,
+        url: `/devices/data?deviceId=${$('#deviceId').val()}`,
         method: 'GET',
         dataType: 'json'
     })
