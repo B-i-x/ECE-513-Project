@@ -49,16 +49,18 @@ void loop()
 {
     long irValue = particleSensor.getIR();
 
-    if (checkForBeat(irValue) == true)
+    if (checkForBeat(irValue))
     {
         // We sensed a beat!
-        long delta = millis() - lastBeat;
-        lastBeat = millis();
+        unsigned long currentTime = millis();
+        unsigned long delta = currentTime - lastBeat;
+        lastBeat = currentTime;
 
-        beatsPerMinute = 60 / (delta / 1000.0);
-
-        if (beatsPerMinute < 255 && beatsPerMinute > 20)
+        if (delta > 0)
         {
+            beatsPerMinute = 60.0 / (delta / 1000.0); // Convert time difference to BPM
+
+            
             rates[rateSpot++] = (byte)beatsPerMinute; // Store this reading in the array
             rateSpot %= RATE_SIZE;                   // Wrap variable
 
@@ -67,6 +69,7 @@ void loop()
             for (byte x = 0; x < RATE_SIZE; x++)
                 beatAvg += rates[x];
             beatAvg /= RATE_SIZE;
+            
         }
     }
 
