@@ -6,7 +6,7 @@ const PORT = 3000;
 app.use(express.json());
 
 // Import routes
-const deviceRoutes = require('./app/routes/deviceRoutes');
+const deviceRoutes = require('./routes/deviceRoutes');
 
 // Use the routes
 app.use('/device', deviceRoutes);
