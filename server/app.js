@@ -30,14 +30,23 @@ app.use(function (req, res, next) {
 });
 
 // Middleware
-app.use(morgan('detailed'));
-// Use the 'combined' format for detailed logs
+app.use((req, res, next) => {
+    console.log('Before Morgan');
+    next();
+});
+
+app.use(morgan('combined'));
+
+app.use((req, res, next) => {
+    console.log('After Morgan');
+    next();
+});
+
 app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing URL-encoded data
 app.use(bodyParser.json()); // Ensure JSON body parsing
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -46,21 +55,13 @@ app.use('/', indexRouter); // Handles main application routes
 app.use('/users', usersRouter); // Handles user-related operations
 app.use('/devices', devicesRouter); // Handles Heart Track device-related operations
 
-// Catch 404 and forward to error handler
-app.use(function (req, res, next) {
-    next(createError(404));
-});
-
-// Error handler
 app.use(function (err, req, res, next) {
-    // Set locals, only providing error in development
-    res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-    // Render the error page
-    res.status(err.status || 500);
-    res.render('error');
+    res.status(err.status || 500).json({
+        message: err.message,
+        error: err, // Send full error details (for debugging; remove in production)
+    });
 });
+
 
 // Start the server
 app.listen(PORT, '0.0.0.0', () => {
