@@ -36,7 +36,7 @@ router.post('/register', async (req, res) => {
 
 
 
-// Get data for a specific device using query parameters, with limit
+// Get data for a specific device using query parameters, with limit and sorted by most recent
 router.get('/data', async (req, res) => {
     const { deviceId, limit } = req.query;
 
@@ -51,6 +51,9 @@ router.get('/data', async (req, res) => {
         }
 
         let measurements = device.measurements;
+
+        // Sort measurements by timestamp in descending order
+        measurements.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
         // Limit the number of data points returned
         if (limit !== undefined) {
@@ -75,6 +78,7 @@ router.get('/data', async (req, res) => {
         res.status(500).json({ message: "Error fetching device data.", error: err.message });
     }
 });
+
 
 
 // Add new data (bpm and blood oxygen level) for a device
