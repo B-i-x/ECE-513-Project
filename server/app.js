@@ -30,17 +30,13 @@ app.use(function (req, res, next) {
 });
 
 // Middleware
-app.use((req, res, next) => {
-    console.log('Before Morgan');
-    next();
-});
+// Define a custom Morgan token to include the body
+morgan.token('body', (req) => JSON.stringify(req.body));
 
-app.use(morgan('combined'));
-
-app.use((req, res, next) => {
-    console.log('After Morgan');
-    next();
-});
+// Use Morgan with the custom token
+app.use(
+    morgan(':method :url :status :res[content-length] - :response-time ms - Body: :body')
+);
 
 app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing URL-encoded data
