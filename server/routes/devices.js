@@ -79,11 +79,11 @@ router.get('/data', async (req, res) => {
 
 // Add new data (bpm and blood oxygen level) for a device
 router.post('/data', async (req, res) => {
-    const { bpm, bOx, deviceId } = req.query;
+    const { bpm, bOx, deviceId } = req.body; // Extract data from JSON body
 
     // Validate required parameters
     if (!bpm || !bOx || !deviceId) {
-        return res.status(400).json({ message: "bpm, bOx, and deviceId are required as query parameters." });
+        return res.status(400).json({ message: "bpm, bOx, and deviceId are required in the JSON body." });
     }
 
     // Convert bpm and bOx to numbers for validation
@@ -123,6 +123,7 @@ router.post('/data', async (req, res) => {
         res.status(500).json({ message: "Error saving measurement.", error: err.message });
     }
 });
+
 
 
 module.exports = router;
