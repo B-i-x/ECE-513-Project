@@ -2,7 +2,7 @@ const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const logger = require('morgan');
+const morgan = require('morgan');
 const bodyParser = require('body-parser');
 
 const app = express();
@@ -30,9 +30,8 @@ app.use(function (req, res, next) {
 });
 
 // Middleware
-app.use(logger('dev'));
-// Use the 'combined' format for detailed logs
 app.use(morgan('detailed'));
+// Use the 'combined' format for detailed logs
 app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing URL-encoded data
 app.use(bodyParser.json()); // Ensure JSON body parsing
