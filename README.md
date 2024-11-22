@@ -32,6 +32,23 @@ Heart Track is a low-cost IoT-enabled web application for monitoring heart rate 
 - Data visualization for daily and weekly summaries.
 - Token-based authentication for secure access.
 
+## Technologies Used
+
+- **Node.js**: Server-side JavaScript execution.
+- **Express**: Web framework for building the REST API.
+- **MongoDB (Mongoose)**: Database management system and ODM for handling user, device, and measurement data.
+- **JWT (JSON Web Tokens)**: Authentication mechanism for securing user login and device interactions.
+- **bcrypt**: Secure password hashing for user registration and login.
+- **AJAX (jQuery)**: For making asynchronous requests from the front-end to the server.
+
+## Project Structure
+
+- `models/`: Contains Mongoose schemas for the application (User, Device, Measurement).
+- `routes/`: Contains Express route handlers for managing user and device operations.
+- `public/`: Front-end assets, including HTML files and JavaScript.
+- `app.js`: Main server file that initializes Express, connects to MongoDB, and sets up routes.
+- `db.js`: Handles MongoDB database connection.
+
 ---
 
 ## Team Members
