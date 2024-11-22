@@ -31,11 +31,14 @@ app.use(function (req, res, next) {
 
 // Middleware
 app.use(logger('dev'));
+// Use the 'combined' format for detailed logs
+app.use(morgan('detailed'));
 app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing URL-encoded data
 app.use(bodyParser.json()); // Ensure JSON body parsing
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 
