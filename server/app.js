@@ -21,14 +21,17 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 // Middleware
-app.use((req, res, next) => {
-    if (!req.secure && req.get('Host')) {
-        const secureUrl = `https://${req.get('Host').replace(/:\d+$/, ":3443")}${req.url}`;
-        return res.redirect(secureUrl);
-    }
-    next();
-});
-
+// app.use((req, res, next) => {
+//     if (!req.secure && req.get('Host')) {
+//         const secureUrl = `https://${req.get('Host').replace(/:\d+$/, ":3443")}${req.url}`;
+//         return res.redirect(secureUrl);
+//     }
+//     next();
+// });
+morgan.token('body', (req) => JSON.stringify(req.body));
+app.use(
+    morgan(':method :url :status :res[content-length] - :response-time ms - Body: :body')
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -57,7 +60,7 @@ const httpsServer = https.createServer(httpsOptions, app);
 
 // Define ports
 const HTTP_PORT = 3000;  // HTTP port
-const HTTPS_PORT = 3443; // HTTPS port
+const HTTPS_PORT = 3001; // HTTPS port
 
 // Start servers
 httpServer.listen(HTTP_PORT, () => {
