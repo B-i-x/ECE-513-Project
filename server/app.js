@@ -29,14 +29,18 @@ app.set('view engine', 'jade');
 //     next();
 // });
 morgan.token('body', (req) => JSON.stringify(req.body));
+
+// Use Morgan with the custom token
 app.use(
     morgan(':method :url :status :res[content-length] - :response-time ms - Body: :body')
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+
+app.use(express.json()); // For parsing application/json
+app.use(express.urlencoded({ extended: true })); // For parsing URL-encoded data
+app.use(bodyParser.json()); // Ensure JSON body parsing
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Route Handlers
@@ -50,7 +54,7 @@ app.use('/devices', devicesRouter);
 app.use(function (err, req, res, next) {
     res.status(err.status || 500).json({
         message: err.message,
-        error: err,
+        error: err, // Send full error details (for debugging; remove in production)
     });
 });
 

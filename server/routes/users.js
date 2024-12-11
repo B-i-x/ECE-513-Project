@@ -12,11 +12,10 @@ if (!JWT_SECRET) {
     process.exit(1); // Exit the app if the secret key is missing
 }
 
-//
 router.post('/register', async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !password) {
+    if (!email || !password) {
         return res.status(400).json({ message: "Username and password are required." });
     }
 
@@ -24,13 +23,13 @@ router.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         console.log("Generated hash during registration:", hashedPassword);
 
-        const newUser = new User({ username, password: hashedPassword });
+        const newUser = new User({ email, password: hashedPassword });
         await newUser.save();
 
-        const savedUser = await User.findOne({ username }); // Query the saved user
+        const savedUser = await User.findOne({ email }); // Query the saved user
         console.log("Saved user in DB:", savedUser); // Log the stored hash to confirm
 
-        res.status(201).json({ message: `User (${username}) registered successfully.` });
+        res.status(201).json({ message: `User (${email}) registered successfully.` });
     } catch (err) {
         console.error("Error during registration:", err.message);
         res.status(500).json({ message: "Error registering user.", error: err.message });
@@ -38,38 +37,79 @@ router.post('/register', async (req, res) => {
 });
 
 
-router.post('/login', async (req, res) => {
-    const { username, password } = req.body;
 
-    if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required." });
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required." });
     }
 
     try {
-        const user = await User.findOne({ username });
+        const user = await User.findOne({ email });
         if (!user) {
-            console.error("User not found:", username);
-            return res.status(401).json({ message: "Invalid username or password." });
+            return res.status(401).json({ message: "Invalid email or password." });
         }
-
-        console.log("Password entered:", password); // Debug log
-        console.log("Stored hashed password from DB:", user.password); // Debug log
 
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log("Password match result:", isMatch); // Debug log
-
         if (!isMatch) {
-            return res.status(401).json({ message: "Invalid username or password." });
+            return res.status(401).json({ message: "Invalid email or password." });
         }
 
-        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ message: "Login successful.", token });
+        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' }); // Ensure token expiration is set
+        res.status(200).json({ message: "Login successful.", token }); // Return the token to the client
     } catch (err) {
         console.error("Error during login:", err.message);
         res.status(500).json({ message: "Error logging in.", error: err.message });
     }
 });
 
+
+const authenticateToken = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+
+    if (!token) {
+        console.error("No token provided."); // Debug log
+        return res.status(401).json({ message: "Access token is required." });
+    }
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        console.log("Decoded token:", decoded); // Debug log
+        req.user = decoded; // Add the decoded user data to the request
+        next();
+    } catch (err) {
+        console.error("Token verification failed:", err.message); // Debug log
+        res.status(403).json({ message: "Invalid or expired token." });
+    }
+};
+
+
+router.put('/update-password', authenticateToken, async (req, res) => {
+    const { newPassword } = req.body;
+
+    if (!newPassword) {
+        return res.status(400).json({ message: "New password is required." });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        const updatedUser = await User.findOneAndUpdate(
+            { _id: req.user.id }, // Use ID from token
+            { password: hashedPassword },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        res.status(200).json({ message: "Password updated successfully." });
+    } catch (err) {
+        res.status(500).json({ message: "Error updating password.", error: err.message });
+    }
+});
 
 
 
