@@ -10,18 +10,19 @@
 </head>
 <body>
     <div class="container">
-        <h1>Login</h1>
-        <div>
-            <label for="email">Email: </label>
-            <input type="email" id="email" placeholder="Enter email" name="email">
+        <h1 class="text-center">Login</h1>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" class="form-control" placeholder="Enter email">
         </div>
-        <div>
-            <label for="password">Password: </label>
-            <input type="password" id="password" placeholder="Enter password" name="password">
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" class="form-control" placeholder="Enter password">
         </div>
-        <br />
-        <button id="btnLogin">Login</button>
-        <button id="btnRegister">Register</button>
+        <div class="text-center">
+            <button id="btnLogin" class="btn btn-success">Login</button>
+            <button id="btnRegister" class="btn btn-primary">Register</button>
+        </div>
     </div>
 </body>
 </html>

@@ -11,87 +11,102 @@
 </head>
 <body>
     <div class="container">
-        <h1>Device Management</h1>
+        <h1 class="text-center">Device Management</h1>
 
         <!-- Device Management Section -->
-        <div>
-            <h3>Manage Devices</h3>
-            <div>
-                <label for="deviceId">Device ID: </label>
-                <input type="text" id="deviceId" placeholder="Enter device ID" name="deviceId">
+        <div class="row">
+            <div class="col-xs-12">
+                <h3>Manage Devices</h3>
+                <div class="form-group">
+                    <label for="deviceId">Device ID:</label>
+                    <input type="text" id="deviceId" class="form-control" placeholder="Enter device ID">
+                </div>
+                <div class="text-center">
+                    <button id="btnRegisterDevice" class="btn btn-primary">Register Device</button>
+                    <button id="btnRemoveDevice" class="btn btn-danger">Remove Device</button>
+                    <button id="btnViewDeviceData" class="btn btn-info">View Device Data</button>
+                </div>
             </div>
-            <br />
-            <button id="btnRegisterDevice">Register Device</button>
-            <button id="btnRemoveDevice">Remove Device</button>
-            <button id="btnViewDeviceData">View Device Data</button>
         </div>
 
         <hr />
 
         <!-- Measurement Data Section -->
-        <div>
-            <h3>Measurement Data</h3>
-            <div>
-                <label for="measurementDeviceId">Device ID for Measurements: </label>
-                <input type="text" id="measurementDeviceId" placeholder="Enter device ID for measurements" name="measurementDeviceId">
+        <div class="row">
+            <div class="col-xs-12">
+                <h3>Measurement Data</h3>
+                <div class="form-group">
+                    <label for="measurementDeviceId">Device ID for Measurements:</label>
+                    <input type="text" id="measurementDeviceId" class="form-control" placeholder="Enter device ID for measurements">
+                </div>
+                <div class="text-center">
+                    <button id="btnFetchAll" class="btn btn-success">Fetch All Data</button>
+                    <button id="btnFetchRecent" class="btn btn-warning">Fetch Recent Measurements</button>
+                    <button id="btnWeeklySummary" class="btn btn-primary">View Weekly Summary</button>
+                    <button id="btnDetailedView" class="btn btn-info">View Detailed Daily Data</button>
+                </div>
             </div>
-            <br />
-            <button id="btnFetchAll">Fetch All Data</button>
-            <button id="btnFetchRecent">Fetch Recent Measurements</button>
-            <button id="btnWeeklySummary">View Weekly Summary</button>
-            <button id="btnDetailedView">View Detailed Daily Data</button>
         </div>
+
         <hr />
 
         <!-- Measurement Scheduling Section -->
-        <div>
-            <h3>Measurement Scheduling</h3>
-            <form id="scheduleForm">
-                <div>
-                    <label for="scheduleDeviceId">Device ID for Scheduling:</label>
-                    <input type="text" id="scheduleDeviceId" placeholder="Enter device ID for scheduling" name="scheduleDeviceId">
-                </div>
-                <div>
-                    <label for="startTime">Start Time:</label>
-                    <input type="time" id="startTime" name="startTime" required>
-                </div>
-                <div>
-                    <label for="endTime">End Time:</label>
-                    <input type="time" id="endTime" name="endTime" required>
-                </div>
-                <div>
-                    <label for="frequency">Frequency (minutes):</label>
-                    <input type="number" id="frequency" placeholder="Enter frequency in minutes" name="frequency" required>
-                </div>
-                <br />
-                <button id="btnSetSchedule">Set Measurement Schedule</button>
-            </form>
+        <div class="row">
+            <div class="col-xs-12">
+                <h3>Measurement Scheduling</h3>
+                <form id="scheduleForm">
+                    <div class="form-group">
+                        <label for="scheduleDeviceId">Device ID for Scheduling:</label>
+                        <input type="text" id="scheduleDeviceId" class="form-control" placeholder="Enter device ID for scheduling">
+                    </div>
+                    <div class="form-group">
+                        <label for="startTime">Start Time:</label>
+                        <input type="time" id="startTime" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="endTime">End Time:</label>
+                        <input type="time" id="endTime" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="frequency">Frequency (minutes):</label>
+                        <input type="number" id="frequency" class="form-control" placeholder="Enter frequency in minutes">
+                    </div>
+                    <div class="text-center">
+                        <button id="btnSetSchedule" class="btn btn-primary">Set Measurement Schedule</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <hr />
 
         <!-- Weekly Summary Chart -->
-        <div>
-            <h3>Weekly Summary</h3>
-            <canvas id="weeklySummaryChart"></canvas>
+        <div class="row">
+            <div class="col-xs-12">
+                <h3>Weekly Summary</h3>
+                <canvas id="weeklySummaryChart" class="chart"></canvas>
+            </div>
         </div>
 
         <hr />
 
         <!-- Detailed Daily View -->
-        <div>
-            <h3>Detailed Daily View</h3>
-            <div>
-                <label for="selectedDate">Select Date: </label>
-                <input type="date" id="selectedDate">
+        <div class="row">
+            <div class="col-xs-12">
+                <h3>Detailed Daily View</h3>
+                <div class="form-group">
+                    <label for="selectedDate">Select Date:</label>
+                    <input type="date" id="selectedDate" class="form-control">
+                </div>
+                <canvas id="heartRateChart" class="chart"></canvas>
+                <canvas id="bloodOxygenChart" class="chart"></canvas>
             </div>
-            <br />
-            <canvas id="heartRateChart"></canvas>
-            <canvas id="bloodOxygenChart"></canvas>
         </div>
 
         <br />
-        <button onclick="location.href='account.html'">Back to Account</button>
+        <div class="text-center">
+            <button onclick="location.href='account.html'" class="btn btn-secondary">Back to Account</button>
+        </div>
     </div>
 
     <!-- JavaScript Initialization -->

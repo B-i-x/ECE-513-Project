@@ -10,17 +10,20 @@
 </head>
 <body>
     <div class="container">
-        <h1>Account Management</h1>
-        <div>
+        <h1 class="text-center">Account Management</h1>
+        <div class="text-center">
             <h3>Welcome, <span id="userEmailDisplay"></span></h3>
         </div>
-        <button onclick="location.href='update-password.html'">Update Password</button>
-        <button onclick="location.href='devices.html'">Manage Devices</button>
-        <br /><br />
-        <button id="btnLogout">Logout</button>
+        <div class="text-center">
+            <button onclick="location.href='update-password.html'" class="btn btn-primary">Update Password</button>
+            <button onclick="location.href='devices.html'" class="btn btn-info">Manage Devices</button>
+        </div>
+        <br />
+        <div class="text-center">
+            <button id="btnLogout" class="btn btn-danger">Logout</button>
+        </div>
     </div>
 
-    <!-- JavaScript to initialize functionality -->
     <script>
         $(document).ready(() => {
             checkAuth(); // Ensure the user is authenticated
