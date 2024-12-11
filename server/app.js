@@ -4,8 +4,6 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
-const https = require('https');
-const fs = require('fs');
 
 const app = express();
 const PORT = 3000;
@@ -18,23 +16,9 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const devicesRouter = require('./routes/devices'); // For Heart Track devices
 
-// SSL Certificate setup
-const options = {
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.cert')
-};
-
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-
-// HTTP to HTTPS redirect middleware (not needed when HTTPS is enforced but here for any HTTP traffic)
-app.use((req, res, next) => {
-    if (!req.secure) {
-        return res.redirect(`https://${req.headers.host}${req.url}`);
-    }
-    next();
-});
 
 // Enable cross-origin access (CORS middleware)
 app.use(function (req, res, next) {
@@ -46,32 +30,38 @@ app.use(function (req, res, next) {
 });
 
 // Middleware
+// Define a custom Morgan token to include the body
 morgan.token('body', (req) => JSON.stringify(req.body));
+
+// Use Morgan with the custom token
 app.use(
     morgan(':method :url :status :res[content-length] - :response-time ms - Body: :body')
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+
+app.use(express.json()); // For parsing application/json
+app.use(express.urlencoded({ extended: true })); // For parsing URL-encoded data
+app.use(bodyParser.json()); // Ensure JSON body parsing
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Route Handlers
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/devices', devicesRouter);
+app.use('/', indexRouter); // Handles main application routes
+app.use('/users', usersRouter); // Handles user-related operations
+app.use('/devices', devicesRouter); // Handles Heart Track device-related operations
 
 app.use(function (err, req, res, next) {
     res.status(err.status || 500).json({
         message: err.message,
-        error: err,
+        error: err, // Send full error details (for debugging; remove in production)
     });
 });
 
-// Start the HTTPS server
-https.createServer(options, app).listen(PORT, '::', () => {
-    console.log(`Server running on https://[::]:${PORT}`);
+
+// Start the server
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
 
 module.exports = app;

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Device Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="javascripts/hearttrack.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Device Management</h1>
+
+        <!-- Device Management Section -->
+        <div>
+            <h3>Manage Devices</h3>
+            <div>
+                <label for="deviceId">Device ID: </label>
+                <input type="text" id="deviceId" placeholder="Enter device ID" name="deviceId">
+            </div>
+            <br />
+            <button id="btnRegisterDevice">Register Device</button>
+            <button id="btnRemoveDevice">Remove Device</button>
+            <button id="btnViewDeviceData">View Device Data</button>
+        </div>
+
+        <hr />
+
+        <!-- Measurement Data Section -->
+        <div>
+            <h3>Measurement Data</h3>
+            <div>
+                <label for="measurementDeviceId">Device ID for Measurements: </label>
+                <input type="text" id="measurementDeviceId" placeholder="Enter device ID for measurements" name="measurementDeviceId">
+            </div>
+            <br />
+            <button id="btnFetchAll">Fetch All Data</button>
+            <button id="btnFetchRecent">Fetch Recent Measurements</button>
+            <button id="btnWeeklySummary">View Weekly Summary</button>
+            <button id="btnDetailedView">View Detailed Daily Data</button>
+        </div>
+
+        <hr />
+
+        <!-- Weekly Summary Chart -->
+        <div>
+            <h3>Weekly Summary</h3>
+            <canvas id="weeklySummaryChart"></canvas>
+        </div>
+
+        <hr />
+
+        <!-- Detailed Daily View -->
+        <div>
+            <h3>Detailed Daily View</h3>
+            <div>
+                <label for="selectedDate">Select Date: </label>
+                <input type="date" id="selectedDate">
+            </div>
+            <br />
+            <canvas id="heartRateChart"></canvas>
+            <canvas id="bloodOxygenChart"></canvas>
+        </div>
+
+        <br />
+        <button onclick="location.href='account.html'">Back to Account</button>
+    </div>
+
+    <!-- JavaScript Initialization -->
+    <script>
+        $(document).ready(() => {
+            checkAuth(); // Ensure the user is authenticated
+        });
+    </script>
+</body>
+</html>

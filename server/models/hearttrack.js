@@ -2,10 +2,11 @@ const mongoose = require("../db"); // Assuming "../db" exports a mongoose instan
 
 // User Schema
 const userSchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true, trim: true },
+    email: { type: String, required: true, unique: true, trim: true }, // Unique email field
     password: { type: String, required: true }, // Store hashed passwords
     devices: [{ type: mongoose.Schema.Types.ObjectId, ref: "Device" }], // References to registered devices
 });
+
 
 // Device Schema
 const deviceSchema = new mongoose.Schema({
