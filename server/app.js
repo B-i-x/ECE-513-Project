@@ -4,22 +4,14 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
+const http = require('http');
 const https = require('https');
 const fs = require('fs');
 
 const app = express();
-const PORT = 3000;
 
-// Import models (if needed directly)
-const { User, Device, Measurement } = require('./models/hearttrack'); // Update path if required
-
-// Import route handlers
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
-const devicesRouter = require('./routes/devices'); // For Heart Track devices
-
-// SSL Certificate setup
-const options = {
+// SSL Certificate setup for HTTPS
+const httpsOptions = {
     key: fs.readFileSync('server.key'),
     cert: fs.readFileSync('server.cert')
 };
@@ -28,28 +20,15 @@ const options = {
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-// HTTP to HTTPS redirect middleware (not needed when HTTPS is enforced but here for any HTTP traffic)
+// Middleware
 app.use((req, res, next) => {
-    if (!req.secure) {
-        return res.redirect(`https://${req.headers.host}${req.url}`);
+    if (!req.secure && req.get('Host')) {
+        const secureUrl = `https://${req.get('Host').replace(/:\d+$/, ":3443")}${req.url}`;
+        return res.redirect(secureUrl);
     }
     next();
 });
 
-// Enable cross-origin access (CORS middleware)
-app.use(function (req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE'); // Allowed methods
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Authorization'); // Allowed headers
-    res.setHeader('Access-Control-Allow-Credentials', true); // Include cookies if needed
-    next();
-});
-
-// Middleware
-morgan.token('body', (req) => JSON.stringify(req.body));
-app.use(
-    morgan(':method :url :status :res[content-length] - :response-time ms - Body: :body')
-);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -58,6 +37,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Route Handlers
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const devicesRouter = require('./routes/devices');
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/devices', devicesRouter);
@@ -69,9 +51,20 @@ app.use(function (err, req, res, next) {
     });
 });
 
-// Start the HTTPS server
-https.createServer(options, app).listen(PORT, '::', () => {
-    console.log(`Server running on https://[::]:${PORT}`);
+// Create HTTP and HTTPS servers
+const httpServer = http.createServer(app);
+const httpsServer = https.createServer(httpsOptions, app);
+
+// Define ports
+const HTTP_PORT = 3000;  // HTTP port
+const HTTPS_PORT = 3443; // HTTPS port
+
+// Start servers
+httpServer.listen(HTTP_PORT, () => {
+    console.log(`HTTP server running on http://localhost:${HTTP_PORT}`);
+});
+httpsServer.listen(HTTPS_PORT, '::', () => {
+    console.log(`HTTPS server running on https://[::]:${HTTPS_PORT}`);
 });
 
 module.exports = app;
