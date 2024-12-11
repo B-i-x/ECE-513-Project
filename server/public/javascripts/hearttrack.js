@@ -16,8 +16,14 @@ function registerUser() {
     })
         .done(data => {
             $('#rxData').html(JSON.stringify(data, null, 2));
+            window.alert("Email Registered.");
         })
         .fail(data => {
+            if (data.status === 401) {
+                // Specific status code for "Device already registered"
+                console.error("Device already registered:", data.responseJSON); // Debug log
+                window.alert("Email already registered!");
+            }
             $('#rxData').html(JSON.stringify(data.responseJSON, null, 2));
         });
 }

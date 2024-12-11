@@ -12,26 +12,25 @@ if (!JWT_SECRET) {
     process.exit(1); // Exit the app if the secret key is missing
 }
 
-//
 router.post('/register', async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-        return res.status(400).json({ message: "Email and password are required." });
+        return res.status(400).json({ message: "Username and password are required." });
     }
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
+        console.log("Generated hash during registration:", hashedPassword);
 
         const newUser = new User({ email, password: hashedPassword });
         await newUser.save();
 
+        const savedUser = await User.findOne({ email }); // Query the saved user
+        console.log("Saved user in DB:", savedUser); // Log the stored hash to confirm
+
         res.status(201).json({ message: `User (${email}) registered successfully.` });
     } catch (err) {
-        if (err.code === 11000) {
-            console.error("Duplicate email error:", err.message);
-            return res.status(400).json({ message: "Email already exists." });
-        }
         console.error("Error during registration:", err.message);
         res.status(500).json({ message: "Error registering user.", error: err.message });
     }
