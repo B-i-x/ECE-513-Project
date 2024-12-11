@@ -16,9 +16,21 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const devicesRouter = require('./routes/devices'); // For Heart Track devices
 
+
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
+
+// HTTP to HTTPS redirect middleware
+app.use((req, res, next) => {
+    // Check the 'x-forwarded-proto' header for proxies or the direct request
+    if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
+        return res.redirect(`https://${req.headers.host}${req.url}`);
+    } else if (!req.secure && req.get('Host')) { // req.secure checks if the request is TLS/SSL encrypted
+        return res.redirect(`https://${req.get('Host')}${req.url}`);
+    }
+    next();
+});
 
 // Enable cross-origin access (CORS middleware)
 app.use(function (req, res, next) {
