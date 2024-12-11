@@ -485,4 +485,5 @@ $(function () {
         e.preventDefault(); // Prevent form submission
         setSchedule(); // Call the schedule setting function
     });
+
 });

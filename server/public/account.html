@@ -9,6 +9,21 @@
     <script src="javascripts/hearttrack.js"></script>
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="account.html">Account Menu</a>
+            </div>
+            <ul class="nav navbar-nav navbar-right" id="nav-menu">
+                <li>
+                    <a href="#" id="btnLogout" class="navbar-link">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Account Management -->
     <div class="container">
         <h1 class="text-center">Account Management</h1>
         <div class="text-center">
@@ -19,11 +34,9 @@
             <button onclick="location.href='devices.html'" class="btn btn-info">Manage Devices</button>
         </div>
         <br />
-        <div class="text-center">
-            <button id="btnLogout" class="btn btn-danger">Logout</button>
-        </div>
     </div>
 
+    <!-- JavaScript -->
     <script>
         $(document).ready(() => {
             checkAuth(); // Ensure the user is authenticated

@@ -9,19 +9,39 @@
     <script src="javascripts/hearttrack.js"></script>
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="index.html">Home</a>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="login.html">Create Account or Sign In</a></li>
+                <li><a href="reference.html">References</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Login Form -->
     <div class="container">
-        <h1 class="text-center">Login</h1>
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" class="form-control" placeholder="Enter email">
-        </div>
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" class="form-control" placeholder="Enter password">
-        </div>
-        <div class="text-center">
-            <button id="btnLogin" class="btn btn-success">Login</button>
-            <button id="btnRegister" class="btn btn-primary">Register</button>
+        <div class="row">
+            <div class="col-xs-12 col-md-6 col-md-offset-3">
+                <h1 class="text-center">Login</h1>
+                <form>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" class="form-control" id="email" placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" class="form-control" id="password" placeholder="Enter password">
+                    </div>
+                    <div class="text-center">
+                        <button type="button" id="btnLogin" class="btn btn-primary">Login</button>
+                        <button type="button" id="btnRegister" class="btn btn-secondary">Register</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </body>
