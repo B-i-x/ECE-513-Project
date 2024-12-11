@@ -13,43 +13,30 @@ if (!JWT_SECRET) {
 }
 
 //
-function registerDevice() {
-    const deviceId = $('#deviceId').val();
-    const token = localStorage.getItem('authToken'); // Retrieve token from localStorage
+router.post('/register', async (req, res) => {
+    const { email, password } = req.body;
 
-    if (!deviceId) {
-        console.error("Device ID is missing."); // Debug log
-        window.alert("Device ID is required!");
-        return;
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required." });
     }
 
-    if (!token) {
-        console.error("Auth token is missing."); // Debug log
-        window.alert("No token found. Please log in again.");
-        return;
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = new User({ email, password: hashedPassword });
+        await newUser.save();
+
+        res.status(201).json({ message: `User (${email}) registered successfully.` });
+    } catch (err) {
+        if (err.code === 11000) {
+            console.error("Duplicate email error:", err.message);
+            return res.status(400).json({ message: "Email already exists." });
+        }
+        console.error("Error during registration:", err.message);
+        res.status(500).json({ message: "Error registering user.", error: err.message });
     }
+});
 
-    console.log("Registering device with token:", token); // Debug log
-
-    $.ajax({
-        url: '/devices/register',
-        method: 'POST',
-        contentType: 'application/json',
-        headers: {
-            Authorization: `Bearer ${token}` // Include token in header
-        },
-        data: JSON.stringify({ deviceId }),
-        dataType: 'json'
-    })
-        .done(data => {
-            console.log("Device registered successfully:", data);
-            window.alert("Device registered successfully!");
-        })
-        .fail(data => {
-            console.error("Device registration failed:", data.responseJSON);
-            $('#rxData').html(JSON.stringify(data.responseJSON, null, 2));
-        });
-}
 
 
 router.post('/login', async (req, res) => {

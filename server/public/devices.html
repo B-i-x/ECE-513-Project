@@ -41,6 +41,32 @@
             <button id="btnWeeklySummary">View Weekly Summary</button>
             <button id="btnDetailedView">View Detailed Daily Data</button>
         </div>
+        <hr />
+
+        <!-- Measurement Scheduling Section -->
+        <div>
+            <h3>Measurement Scheduling</h3>
+            <form id="scheduleForm">
+                <div>
+                    <label for="scheduleDeviceId">Device ID for Scheduling:</label>
+                    <input type="text" id="scheduleDeviceId" placeholder="Enter device ID for scheduling" name="scheduleDeviceId">
+                </div>
+                <div>
+                    <label for="startTime">Start Time:</label>
+                    <input type="time" id="startTime" name="startTime" required>
+                </div>
+                <div>
+                    <label for="endTime">End Time:</label>
+                    <input type="time" id="endTime" name="endTime" required>
+                </div>
+                <div>
+                    <label for="frequency">Frequency (minutes):</label>
+                    <input type="number" id="frequency" placeholder="Enter frequency in minutes" name="frequency" required>
+                </div>
+                <br />
+                <button id="btnSetSchedule">Set Measurement Schedule</button>
+            </form>
+        </div>
 
         <hr />
 

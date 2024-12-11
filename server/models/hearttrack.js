@@ -10,20 +10,26 @@ const userSchema = new mongoose.Schema({
 
 // Device Schema
 const deviceSchema = new mongoose.Schema({
-    deviceId: { 
-        type: String, 
-        required: true, 
-        unique: true, 
-        trim: true 
+    deviceId: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true
     },
-    owner: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "User" 
-    }, // References the user who owns this device
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
     measurements: [
         { type: mongoose.Schema.Types.ObjectId, ref: "Measurement" }
-    ], // References the measurements
+    ],
+    schedule: {
+        startTime: { type: String }, // e.g., "08:00"
+        endTime: { type: String },   // e.g., "20:00"
+        frequency: { type: Number } // Frequency in minutes
+    }
 });
+
 
 // Measurement Schema
 const measurementSchema = new mongoose.Schema({

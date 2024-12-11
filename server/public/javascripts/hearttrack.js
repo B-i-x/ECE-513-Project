@@ -22,6 +22,40 @@ function registerUser() {
         });
 }
 
+function setSchedule() {
+    const deviceId = $('#scheduleDeviceId').val();
+    const startTime = $('#startTime').val();
+    const endTime = $('#endTime').val();
+    const frequency = $('#frequency').val();
+    const token = localStorage.getItem('authToken');
+
+    if (!deviceId || !startTime || !endTime || !frequency) {
+        window.alert("All fields are required!");
+        return;
+    }
+
+    if (!token) {
+        window.alert("No token found. Please log in again.");
+        return;
+    }
+
+    $.ajax({
+        url: '/devices/set-schedule',
+        method: 'POST',
+        contentType: 'application/json',
+        headers: { Authorization: `Bearer ${token}` },
+        data: JSON.stringify({ deviceId, startTime, endTime, frequency }),
+        dataType: 'json'
+    })
+        .done(data => {
+            window.alert("Schedule set successfully!");
+            $('#rxData').html(JSON.stringify(data, null, 2));
+        })
+        .fail(data => {
+            window.alert("Failed to set schedule.");
+            $('#rxData').html(JSON.stringify(data.responseJSON, null, 2));
+        });
+}
 
 function updatePassword() {
     const newPassword = $('#newPassword').val();
@@ -165,7 +199,15 @@ function registerDevice() {
             window.alert("Device registered successfully!");
         })
         .fail(data => {
-            console.error("Failed to register device:", data.responseJSON); // Debug log
+            if (data.status === 409) {
+                // Specific status code for "Device already registered"
+                console.error("Device already registered:", data.responseJSON); // Debug log
+                window.alert("Device already registered!");
+            } else {
+                // General error handling
+                console.error("Failed to register device:", data.responseJSON); // Debug log
+                window.alert("Failed to register device. Please try again.");
+            }
         });
 }
 
@@ -187,6 +229,7 @@ function viewDeviceData() {
         })
         .fail(function (data) {
             $('#rxData').html(JSON.stringify(data.responseJSON, null, 2));
+            window.alert("View Device Data failed.");
         });
 }
 
@@ -432,4 +475,8 @@ $(function () {
     $('#btnWeeklySummary').click(fetchWeeklySummary);
     $('#btnDetailedView').click(fetchDetailedView);
     $('#btnLogout').click(logoutUser);
+    $('#btnSetSchedule').click(function (e) {
+        e.preventDefault(); // Prevent form submission
+        setSchedule(); // Call the schedule setting function
+    });
 });

@@ -25,6 +25,29 @@ const authenticateToken = (req, res, next) => {
     }
 };
 
+router.post('/set-schedule', authenticateToken, async (req, res) => {
+    const { deviceId, startTime, endTime, frequency } = req.body;
+
+    if (!deviceId || !startTime || !endTime || !frequency) {
+        return res.status(400).json({ message: "All fields (deviceId, startTime, endTime, frequency) are required." });
+    }
+
+    try {
+        const device = await Device.findOne({ deviceId, owner: req.user.id });
+        if (!device) {
+            return res.status(404).json({ message: "Device not found or not owned by the user." });
+        }
+
+        device.schedule = { startTime, endTime, frequency };
+        await device.save();
+
+        res.status(200).json({ message: "Schedule set successfully.", schedule: device.schedule });
+    } catch (err) {
+        res.status(500).json({ message: "Error setting schedule.", error: err.message });
+    }
+});
+
+
 router.post('/register', authenticateToken, async (req, res) => {
     const { deviceId } = req.body;
 
