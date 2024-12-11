@@ -7,14 +7,20 @@ const bodyParser = require('body-parser');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
+require('dotenv').config(); // Load environment variables
 
 const app = express();
 
-// SSL Certificate setup for HTTPS
-const httpsOptions = {
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.cert')
-};
+const SERVER_ENV = process.env.SERVER_ENV;
+
+console.log('SERVER_ENV:', SERVER_ENV);
+if (SERVER_ENV != 'local') {
+    // SSL Certificate setup for HTTPS
+    const httpsOptions = {
+        key: fs.readFileSync('server.key'),
+        cert: fs.readFileSync('server.cert')
+    };
+}
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -60,18 +66,27 @@ app.use(function (err, req, res, next) {
 
 // Create HTTP and HTTPS servers
 const httpServer = http.createServer(app);
-const httpsServer = https.createServer(httpsOptions, app);
+
+if (SERVER_ENV !== 'local') {
+    // Create HTTPS server
+    const httpsServer = https.createServer(httpsOptions, app);
+}
 
 // Define ports
 const HTTP_PORT = 3000;  // HTTP port
+
 const HTTPS_PORT = 3001; // HTTPS port
 
 // Start servers
 httpServer.listen(HTTP_PORT, () => {
     console.log(`HTTP server running on http://localhost:${HTTP_PORT}`);
 });
-httpsServer.listen(HTTPS_PORT, '::', () => {
-    console.log(`HTTPS server running on https://[::]:${HTTPS_PORT}`);
-});
+
+if (SERVER_ENV !== 'local') {
+
+    httpsServer.listen(HTTPS_PORT, '::', () => {
+        console.log(`HTTPS server running on https://[::]:${HTTPS_PORT}`);
+    });
+}
 
 module.exports = app;
