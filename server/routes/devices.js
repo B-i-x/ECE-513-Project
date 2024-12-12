@@ -104,10 +104,10 @@ router.get('/data', async (req, res) => {
 
     try {
         const device = await Device.findOne({ deviceId }).populate('measurements');
+
         if (!device) {
             return res.status(404).json({ message: "Device not found." });
         }
-
         let measurements = device.measurements;
 
         // Sort measurements by timestamp in descending order
@@ -156,7 +156,6 @@ router.post('/data', async (req, res) => {
         return res.status(400).json({ message: "bpm and bOx must be valid numbers." });
     }
 
-    console.log("gets here"); // Debug log
 
     try {
         // Find the device by deviceId
@@ -164,7 +163,6 @@ router.post('/data', async (req, res) => {
         if (!device) {
             return res.status(404).json({ message: "Device not found." });
         }
-        console.log("test: ", device._id); // Debug log
 
         // Create a new Measurement
         const newMeasurement = new Measurement({
@@ -172,10 +170,6 @@ router.post('/data', async (req, res) => {
             bloodOxygenSaturation,
             device: device._id,
         });
-
-
-        console.log("New measurement is:", newMeasurement); // Debug log
-        console.log("please"); // Debug log
 
         // Save the measurement
         await newMeasurement.save();
