@@ -98,21 +98,21 @@ function loadWeeklyView() {
             return;
         }
 
-        console.log('Weekly measurements:', measurements);
+        // console.log('Weekly measurements:', measurements);
 
         const labels = measurements.map(m => new Date(m.timestamp).toLocaleString());
         const heartRateData = measurements.map(m => m.heartRate);
         const bloodOxygenData = measurements.map(m => m.bloodOxygenSaturation);
 
-        console.log('Labels:', labels);
-        console.log('Heart Rate Data:', heartRateData);
-        console.log('Blood Oxygen Data:', bloodOxygenData);
+        // console.log('Labels:', labels);
+        // console.log('Heart Rate Data:', heartRateData);
+        // console.log('Blood Oxygen Data:', bloodOxygenData);
 
         const heartRateStats = calculateStats(measurements, 'heartRate');
         const bloodOxygenStats = calculateStats(measurements, 'bloodOxygenSaturation');
 
-        console.log('Heart Rate Stats:', heartRateStats);
-        console.log('Blood Oxygen Stats:', bloodOxygenStats);
+        // console.log('Heart Rate Stats:', heartRateStats);
+        // console.log('Blood Oxygen Stats:', bloodOxygenStats);
 
         updateStats('weeklyHR', heartRateStats, 'HR');
         updateStats('weeklyBO', bloodOxygenStats, 'BO');
@@ -128,9 +128,21 @@ function loadWeeklyView() {
 function loadDailyView() {
     const deviceId = $('#measurementDeviceId').find(':selected').val();
 
-    const startDate = new Date().toISOString().split('T')[0];
+    if (!deviceId) {
+        alert('Please select a valid device ID.');
+        console.error('No device ID selected.');
+        return;
+    }
+
+    const startDate = new Date().toISOString().split('T')[0]; // Current day in YYYY-MM-DD format
 
     fetchData({ deviceId, startDate }).then(measurements => {
+        if (measurements.length === 0) {
+            console.warn('No measurements retrieved for daily view.');
+            alert('No data available for the selected device.');
+            return;
+        }
+
         const labels = measurements.map(m => new Date(m.timestamp).toLocaleTimeString());
         const heartRateData = measurements.map(m => m.heartRate);
         const bloodOxygenData = measurements.map(m => m.bloodOxygenSaturation);
@@ -143,13 +155,27 @@ function loadDailyView() {
 
         renderChart('dailyHeartRateChart', labels, heartRateData, 'Heart Rate (bpm)');
         renderChart('dailyBloodOxygenChart', labels, bloodOxygenData, 'Blood Oxygen Saturation (%)');
+    }).catch(error => {
+        console.error('Error fetching daily data:', error);
     });
 }
 
 function loadLifetimeView() {
     const deviceId = $('#measurementDeviceId').find(':selected').val();
 
+    if (!deviceId) {
+        alert('Please select a valid device ID.');
+        console.error('No device ID selected.');
+        return;
+    }
+
     fetchData({ deviceId }).then(measurements => {
+        if (measurements.length === 0) {
+            console.warn('No measurements retrieved for lifetime view.');
+            alert('No data available for the selected device.');
+            return;
+        }
+
         const labels = measurements.map(m => new Date(m.timestamp).toLocaleString());
         const heartRateData = measurements.map(m => m.heartRate);
         const bloodOxygenData = measurements.map(m => m.bloodOxygenSaturation);
@@ -162,8 +188,26 @@ function loadLifetimeView() {
 
         renderChart('lifetimeHeartRateChart', labels, heartRateData, 'Heart Rate (bpm)');
         renderChart('lifetimeBloodOxygenChart', labels, bloodOxygenData, 'Blood Oxygen Saturation (%)');
+    }).catch(error => {
+        console.error('Error fetching lifetime data:', error);
     });
 }
+
+// Function to activate the selected tab pane and deactivate others
+function activateTabPane(tabId) {
+    // Deactivate all tab panes
+    $('.tab-pane').removeClass('active show');
+
+    // Activate the selected tab pane
+    $(`#${tabId}`).addClass('active show');
+
+    // Deactivate all nav links
+    $('.nav-link').removeClass('active');
+
+    // Activate the selected tab link
+    $(`#${tabId}-tab`).addClass('active');
+}
+
 
 $(function () {
     $('#btnLogout').click(logoutUser);
@@ -178,8 +222,19 @@ $(function () {
 
 
     // Bind tab click events
-    $('#weekly-tab').on('click', loadWeeklyView);
-    $('#daily-tab').on('click', loadDailyView);
-    $('#lifetime-tab').on('click', loadLifetimeView);
+    $('#weekly-tab').on('click', 
+        loadWeeklyView,
+        activateTabPane('weekly')
+    );
+    $('#daily-tab').on('click', function () {
+        activateTabPane('daily');
+        loadDailyView();
+    });
+    $('#lifetime-tab').on('click', function () {
+        activateTabPane('lifetime');
+        loadLifetimeView();
+    });
 
+    // Activate the default tab (weekly) on page load
+    activateTabPane('weekly');
 });
