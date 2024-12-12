@@ -12,26 +12,52 @@ if (!JWT_SECRET) {
     process.exit(1); // Exit the app if the secret key is missing
 }
 
-router.post('/register', async (req, res) => {
-    const { email, password } = req.body;
+// POST /users/register - Register a new user
+router.post("/register", async (req, res) => {
+    const { email, password, role, specialization } = req.body;
 
     if (!email || !password) {
-        return res.status(400).json({ message: "Username and password are required." });
+        return res.status(400).json({ message: "Email and password are required." });
+    }
+
+    if (role && !["patient", "physician"].includes(role)) {
+        return res.status(400).json({ message: "Invalid role. Allowed values are 'patient' or 'physician'." });
     }
 
     try {
+        // Check if the email is already registered
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            console.error(`Registration failed: Email (${email}) already exists.`);
+            return res.status(409).json({ message: "Email is already registered." });
+        }
+
+        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
         console.log("Generated hash during registration:", hashedPassword);
 
-        const newUser = new User({ email, password: hashedPassword });
+        // Create and save the new user
+        const newUser = new User({
+            email,
+            password: hashedPassword,
+            role: role || "patient", // Default to "patient" if role is not provided
+            specialization: role === "physician" ? specialization : undefined, // Only for physicians
+        });
         await newUser.save();
 
-        const savedUser = await User.findOne({ email }); // Query the saved user
-        console.log("Saved user in DB:", savedUser); // Log the stored hash to confirm
+        console.log("New user created:", { id: newUser._id, email: newUser.email, role: newUser.role });
 
-        res.status(201).json({ message: `User (${email}) registered successfully.` });
+        res.status(201).json({
+            message: `User (${email}) registered successfully.`,
+            user: {
+                id: newUser._id,
+                email: newUser.email,
+                role: newUser.role,
+                specialization: newUser.specialization,
+            },
+        });
     } catch (err) {
-        console.error("Error during registration:", err.message);
+        console.error("Error during user registration:", err.message);
         res.status(500).json({ message: "Error registering user.", error: err.message });
     }
 });

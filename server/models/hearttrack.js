@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true, trim: true }, // Unique email field
     password: { type: String, required: true }, // Store hashed passwords
     devices: [{ type: mongoose.Schema.Types.ObjectId, ref: "Device" }], // References to registered devices
+    role: { type: String, enum: ["patient", "physician"], default: "patient" }, // Role to distinguish users
 });
 
 
@@ -49,27 +50,34 @@ const measurementSchema = new mongoose.Schema({
     device: { type: mongoose.Schema.Types.ObjectId, ref: "Device" }, // References the device
 });
 
-const mongoose = require("mongoose");
-
-// Physician Schema
-const physicianSchema = new mongoose.Schema({
-    email: { type: String, required: true, unique: true, trim: true }, // Unique email for physician
-    password: { type: String, required: true }, // Store hashed password for physician
-    patients: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // References to associated patients
-    specialization: { type: String, trim: true }, // Optional field for physician's specialization
-    createdAt: { type: Date, default: Date.now }, // Timestamp for creation
+const physicianPatientSchema = new mongoose.Schema({
+    physician: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+    patient: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
 });
 
+const mongoose = require("mongoose");
 
 // Create Models
 const User = mongoose.model("User", userSchema);
 const Device = mongoose.model("Device", deviceSchema);
 const Measurement = mongoose.model("Measurement", measurementSchema);
-const Physician = mongoose.model("Physician", physicianSchema);
+const physicianPatient = mongoose.model("PhysicianPatient", physicianPatientSchema);
 
 module.exports = {
     User,
     Device,
     Measurement,
-    Physician
+    physicianPatient
 };
