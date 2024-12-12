@@ -17,11 +17,11 @@ const authenticateApiKey = (req, res, next) => {
 };
 
 router.post('/register', authenticateApiKey, async (req, res) => {
-    const { deviceId } = req.body;
+    const { deviceId, ssid } = req.body;
 
-    if (!deviceId) {
-        console.error("No Device ID provided."); // Debug log
-        return res.status(400).json({ message: "Device ID is required." });
+    if (!deviceId || !ssid) {
+        console.error("Device ID and SSID are required."); // Debug log
+        return res.status(400).json({ message: "Device ID and SSID are required." });
     }
 
     try {
@@ -35,7 +35,7 @@ router.post('/register', authenticateApiKey, async (req, res) => {
         }
 
         // Create and save the new device
-        const newDevice = new Device({ deviceId });
+        const newDevice = new Device({ deviceId, ssid });
         await newDevice.save();
 
         console.log("Device registered successfully:", newDevice); // Debug log

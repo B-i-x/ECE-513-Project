@@ -136,17 +136,23 @@ router.delete("/unclaim-device", authenticateToken, async (req, res) => {
                 .json({ message: "Device not associated with this user." });
         }
 
+        // Remove the owner from the device
+        const deviceToUnclaim = user.devices[deviceIndex];
+        const device = await Device.findById(deviceToUnclaim._id);
+        if (!device) {
+            return res.status(404).json({ message: "Device not found." });
+        }
+
+        device.owner = null; // Unclaim the device
+        await device.save();
+
         // Remove the device from the user's devices list
-        const deviceToRemove = user.devices[deviceIndex];
         user.devices.splice(deviceIndex, 1);
         await user.save();
 
-        // Optionally, delete the device from the database
-        await Device.findByIdAndDelete(deviceToRemove._id);
-
-        res.status(200).json({ message: "Device removed successfully." });
+        res.status(200).json({ message: "Device unclaimed successfully." });
     } catch (err) {
-        res.status(500).json({ message: "Error removing device.", error: err.message });
+        res.status(500).json({ message: "Error unclaiming device.", error: err.message });
     }
 });
 
@@ -212,9 +218,9 @@ router.get('/devices', authenticateToken, async (req, res) => {
 
 
 
-// Get data for a specific device using query parameters, with limit and sorted by most recent
+// Get data for a specific device using query parameters, with limit, date, and time filters
 router.get('/data', async (req, res) => {
-    const { deviceId, limit } = req.query;
+    const { deviceId, limit, startDate, endDate, startTime, endTime } = req.query;
 
     if (!deviceId) {
         return res.status(400).json({ message: "Device ID is required as a query parameter." });
@@ -226,10 +232,33 @@ router.get('/data', async (req, res) => {
         if (!device) {
             return res.status(404).json({ message: "Device not found." });
         }
+
         let measurements = device.measurements;
 
         // Sort measurements by timestamp in descending order
         measurements.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        // Apply date range filters
+        if (startDate || endDate) {
+            const start = startDate ? new Date(`${startDate}T00:00:00`) : null;
+            const end = endDate ? new Date(`${endDate}T23:59:59`) : null;
+
+            measurements = measurements.filter(measurement => {
+                const measurementDate = new Date(measurement.timestamp);
+                return (!start || measurementDate >= start) && (!end || measurementDate <= end);
+            });
+        }
+
+        // Apply time range filters
+        if (startTime || endTime) {
+            const start = startTime ? new Date(`1970-01-01T${startTime}`) : null;
+            const end = endTime ? new Date(`1970-01-01T${endTime}`) : null;
+
+            measurements = measurements.filter(measurement => {
+                const measurementTime = new Date(`1970-01-01T${new Date(measurement.timestamp).toTimeString().split(' ')[0]}`);
+                return (!start || measurementTime >= start) && (!end || measurementTime <= end);
+            });
+        }
 
         // Limit the number of data points returned
         if (limit !== undefined) {
@@ -254,5 +283,6 @@ router.get('/data', async (req, res) => {
         res.status(500).json({ message: "Error fetching device data.", error: err.message });
     }
 });
+
 
 module.exports = router;

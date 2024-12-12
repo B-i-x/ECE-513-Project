@@ -1,119 +1,12 @@
 
 import { formatTimestamp, renderChart, filterLastSevenDays } from './chart_utils.js';
+import { removeDevice, loadDeviceTables, searchAndClaimDevice } from './claming.js';
 
-// Function to load devices into tables
-function loadDeviceTables() {
-    // Fetch all unclaimed devices
-    $.ajax({
-        url: '/users/unclaimed-devices',
-        method: 'GET',
-        headers: {
-            'apikey': 'somerandomstring', // Replace with actual API key if needed
-        },
-        success: function(data) {
-            console.log('Unclaimed devices data:', data);
-            populateUnclaimedDevicesTable(data.devices);
-        },
-        error: function(err) {
-            console.error('Error fetching unclaimed devices:', err);
-        }
-    });
+window.removeDevice = removeDevice;
 
-    // Fetch user-owned devices
-    $.ajax({
-        url: '/users/devices',
-        method: 'GET',
-        headers: {
-            'apikey': 'somerandomstring', // Replace with actual API key if needed
-        },
-        success: function(data) {
-            console.log('User devices data:', data);
-            populateTable('#userDevicesTable tbody', data.devices, true);
-        },
-        error: function(err) {
-            console.error('Error fetching user devices:', err);
-        }
-    });
-}
 
-// Function to populate the unclaimed devices table
-function populateUnclaimedDevicesTable(devices) {
-    const tbody = $('#unclaimedDevicesTable tbody');
-    tbody.empty(); // Clear existing rows
 
-    devices.forEach(device => {
-        const row = $('<tr>');
 
-        row.append(`<td>${device.deviceId}</td>`);
-        row.append(`<td>${new Date(device.registerDate).toLocaleString()}</td>`);
-        row.append(`
-            <td>
-                <button class="btn btn-success btn-sm" onclick="claimDevice('${device.deviceId}')">Claim</button>
-            </td>
-        `);
-
-        tbody.append(row);
-    });
-}
-
-// Function to populate a table with devices
-function populateTable(selector, devices, addActions = false) {
-    const tbody = $(selector);
-    tbody.empty(); // Clear existing rows
-
-    devices.forEach(device => {
-        const row = $('<tr>');
-
-        row.append(`<td>${device.deviceId}</td>`);
-        row.append(`<td>${new Date(device.registerDate).toLocaleString()}</td>`);
-
-        if (addActions) {
-            row.append(`
-                <td>
-                    <button class="btn btn-danger btn-sm" onclick="removeDevice('${device.deviceId}')">Remove</button>
-                </td>
-            `);
-        }
-
-        tbody.append(row);
-    });
-}
-
-// Function to claim an unclaimed device
-function claimDevice(deviceId) {
-    fetch('/api/claim-device', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'apikey': 'somerandomstring', // Replace with actual API key if needed
-        },
-        body: JSON.stringify({ deviceId }),
-    })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            loadDeviceTables(); // Refresh tables
-        })
-        .catch(err => console.error('Error claiming device:', err));
-}
-
-// Function to remove a user-owned device
-function removeDevice(deviceId) {
-    fetch('/api/remove-device', {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'apikey': 'somerandomstring', // Replace with actual API key if needed
-        },
-        body: JSON.stringify({ deviceId }),
-    })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            loadDeviceTables(); // Refresh tables
-        })
-        .catch(err => console.error('Error removing device:', err));
-}
 
 function setSchedule() {
     const deviceId = $('#scheduleDeviceId').val();
@@ -193,7 +86,7 @@ function fetchMeasurements(deviceId, limit, onSuccess, selectedDate = null) {
         return;
     }
 
-    let url = `/devices/data?deviceId=${deviceId}&limit=${limit}`;
+    let url = `/users/data?deviceId=${deviceId}&limit=${limit}`;
 
     if (selectedDate) {
         url += `&date=${selectedDate}`; // Append selected date to the URL if provided
@@ -232,13 +125,9 @@ $(function () {
         setSchedule(); // Call the schedule setting function
     });
 
-    // Event listener for Refresh Devices button
-    $('#btnRefreshDevices').on('click', () => {
-        loadDeviceTables();
-    });
-
     // Initial load
     loadDeviceTables();
+    $('#btnSearchUnclaimedDevice').on('click', searchAndClaimDevice);
 
     // Handle filter visibility
     $('#selectedFilter').on('change', function () {
