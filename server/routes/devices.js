@@ -17,11 +17,11 @@ const authenticateApiKey = (req, res, next) => {
 };
 
 router.post('/register', authenticateApiKey, async (req, res) => {
-    const { deviceId } = req.body;
+    const { deviceId, ssid } = req.body;
 
-    if (!deviceId) {
-        console.error("No Device ID provided."); // Debug log
-        return res.status(400).json({ message: "Device ID is required." });
+    if (!deviceId || !ssid) {
+        console.error("Device ID and SSID are required."); // Debug log
+        return res.status(400).json({ message: "Device ID and SSID are required." });
     }
 
     try {
@@ -35,7 +35,7 @@ router.post('/register', authenticateApiKey, async (req, res) => {
         }
 
         // Create and save the new device
-        const newDevice = new Device({ deviceId });
+        const newDevice = new Device({ deviceId, ssid });
         await newDevice.save();
 
         console.log("Device registered successfully:", newDevice); // Debug log
@@ -96,44 +96,44 @@ router.post('/data', async (req, res) => {
     }
 });
 
-// Route to get timing data for a device
-router.get("/timing-data", authenticateToken, async (req, res) => {
-    const { deviceId } = req.query;
+// // Route to get timing data for a device
+// router.get("/timing-data", authenticateToken, async (req, res) => {
+//     const { deviceId } = req.query;
 
-    if (!deviceId) {
-        return res.status(400).json({ message: "Device ID is required as a query parameter." });
-    }
+//     if (!deviceId) {
+//         return res.status(400).json({ message: "Device ID is required as a query parameter." });
+//     }
 
-    try {
-        // Find the device by deviceId and ensure it belongs to the authenticated user
-        const device = await Device.findOne({ deviceId, owner: req.user.id });
-        if (!device) {
-            return res.status(404).json({ message: "Device not found or not owned by the user." });
-        }
+//     try {
+//         // Find the device by deviceId and ensure it belongs to the authenticated user
+//         const device = await Device.findOne({ deviceId, owner: req.user.id });
+//         if (!device) {
+//             return res.status(404).json({ message: "Device not found or not owned by the user." });
+//         }
 
-        // Default values
-        const defaultSchedule = {
-            startTime: 6,
-            endTime: 22,
-            frequencyMin: 30,
-        };
+//         // Default values
+//         const defaultSchedule = {
+//             startTime: 6,
+//             endTime: 22,
+//             frequencyMin: 30,
+//         };
 
-        // Use the device's schedule if it exists, otherwise use defaults
-        const schedule = device.schedule || defaultSchedule;
+//         // Use the device's schedule if it exists, otherwise use defaults
+//         const schedule = device.schedule || defaultSchedule;
 
-        res.status(200).json({
-            message: "Timing data retrieved successfully.",
-            schedule: {
-                startTime: schedule.startTime || defaultSchedule.startTime,
-                endTime: schedule.endTime || defaultSchedule.endTime,
-                frequencyMin: schedule.frequencyMin || defaultSchedule.frequencyMin,
-            },
-        });
-    } catch (err) {
-        console.error("Error fetching timing data:", err.message);
-        res.status(500).json({ message: "Error fetching timing data.", error: err.message });
-    }
-});
+//         res.status(200).json({
+//             message: "Timing data retrieved successfully.",
+//             schedule: {
+//                 startTime: schedule.startTime || defaultSchedule.startTime,
+//                 endTime: schedule.endTime || defaultSchedule.endTime,
+//                 frequencyMin: schedule.frequencyMin || defaultSchedule.frequencyMin,
+//             },
+//         });
+//     } catch (err) {
+//         console.error("Error fetching timing data:", err.message);
+//         res.status(500).json({ message: "Error fetching timing data.", error: err.message });
+//     }
+// });
 
 
 module.exports = router;

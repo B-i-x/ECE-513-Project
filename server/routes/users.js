@@ -1,8 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { User } = require('../models/hearttrack');
 require('dotenv').config(); // Load environment variables
+const { Device, User, Measurement } = require("../models/hearttrack");
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET; // Retrieve the secret key from the environment variable
@@ -112,7 +112,7 @@ router.put('/update-password', authenticateToken, async (req, res) => {
 });
 
 
-router.delete("/remove-device", authenticateToken, async (req, res) => {
+router.delete("/unclaim-device", authenticateToken, async (req, res) => {
     const { deviceId } = req.body;
 
     if (!deviceId) {
@@ -136,24 +136,91 @@ router.delete("/remove-device", authenticateToken, async (req, res) => {
                 .json({ message: "Device not associated with this user." });
         }
 
+        // Remove the owner from the device
+        const deviceToUnclaim = user.devices[deviceIndex];
+        const device = await Device.findById(deviceToUnclaim._id);
+        if (!device) {
+            return res.status(404).json({ message: "Device not found." });
+        }
+
+        device.owner = null; // Unclaim the device
+        await device.save();
+
         // Remove the device from the user's devices list
-        const deviceToRemove = user.devices[deviceIndex];
         user.devices.splice(deviceIndex, 1);
         await user.save();
 
-        // Optionally, delete the device from the database
-        await Device.findByIdAndDelete(deviceToRemove._id);
-
-        res.status(200).json({ message: "Device removed successfully." });
+        res.status(200).json({ message: "Device unclaimed successfully." });
     } catch (err) {
-        res.status(500).json({ message: "Error removing device.", error: err.message });
+        res.status(500).json({ message: "Error unclaiming device.", error: err.message });
+    }
+});
+
+router.post('/claim-device', authenticateToken, async (req, res) => {
+    const { deviceId } = req.body;
+
+    if (!deviceId) {
+        return res.status(400).json({ message: "Device ID is required." });
+    }
+
+    try {
+        // Find the device with the given ID and ensure it is unclaimed (no owner)
+        const device = await Device.findOne({ deviceId, owner: null });
+        if (!device) {
+            return res.status(404).json({ message: "Device not found or already claimed." });
+        }
+
+        // Assign the device to the user
+        device.owner = req.user.id;
+        await device.save();
+
+        // Add the device to the user's devices list
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        user.devices.push(device._id);
+        await user.save();
+
+        res.status(200).json({ message: "Device claimed successfully.", device });
+    } catch (err) {
+        console.error("Error claiming device:", err.message);
+        res.status(500).json({ message: "Error claiming device.", error: err.message });
     }
 });
 
 
-// Get data for a specific device using query parameters, with limit and sorted by most recent
+router.get('/unclaimed-devices', async (req, res) => {
+    try {
+        // Fetch devices where the owner is null
+        const devices = await Device.find({ owner: null }, 'deviceId'); // Fetch only required fields
+        res.status(200).json({ devices });
+    } catch (err) {
+        console.error("Error fetching unclaimed devices:", err.message);
+        res.status(500).json({ message: "Error fetching unclaimed devices.", error: err.message });
+    }
+});
+
+
+router.get('/devices', authenticateToken, async (req, res) => {
+    try {
+        // Fetch devices where the owner matches the authenticated user
+        const devices = await Device.find({ owner: req.user.id }, 'deviceId')
+
+        res.status(200).json({ devices });
+    } catch (err) {
+        console.error("Error fetching claimed devices:", err.message);
+        res.status(500).json({ message: "Error fetching claimed devices.", error: err.message });
+    }
+});
+
+
+
+
+// Get data for a specific device using query parameters, with limit, date, and time filters
 router.get('/data', async (req, res) => {
-    const { deviceId, limit } = req.query;
+    const { deviceId, limit, startDate, endDate, startTime, endTime } = req.query;
 
     if (!deviceId) {
         return res.status(400).json({ message: "Device ID is required as a query parameter." });
@@ -165,10 +232,33 @@ router.get('/data', async (req, res) => {
         if (!device) {
             return res.status(404).json({ message: "Device not found." });
         }
+
         let measurements = device.measurements;
 
         // Sort measurements by timestamp in descending order
         measurements.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        // Apply date range filters
+        if (startDate || endDate) {
+            const start = startDate ? new Date(`${startDate}T00:00:00`) : null;
+            const end = endDate ? new Date(`${endDate}T23:59:59`) : null;
+
+            measurements = measurements.filter(measurement => {
+                const measurementDate = new Date(measurement.timestamp);
+                return (!start || measurementDate >= start) && (!end || measurementDate <= end);
+            });
+        }
+
+        // Apply time range filters
+        if (startTime || endTime) {
+            const start = startTime ? new Date(`1970-01-01T${startTime}`) : null;
+            const end = endTime ? new Date(`1970-01-01T${endTime}`) : null;
+
+            measurements = measurements.filter(measurement => {
+                const measurementTime = new Date(`1970-01-01T${new Date(measurement.timestamp).toTimeString().split(' ')[0]}`);
+                return (!start || measurementTime >= start) && (!end || measurementTime <= end);
+            });
+        }
 
         // Limit the number of data points returned
         if (limit !== undefined) {
@@ -193,5 +283,6 @@ router.get('/data', async (req, res) => {
         res.status(500).json({ message: "Error fetching device data.", error: err.message });
     }
 });
+
 
 module.exports = router;
