@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     
-    <script src="javascripts/hearttrack.js"></script>
+    <script type="module" src="javascripts/hearttrack.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-default">
@@ -56,14 +56,16 @@
                 </div>
                 <div class="text-center">
                     <button id="btnFetchAll" class="btn btn-success">Fetch All Data</button>
-                    <button id="btnFetchRecent" class="btn btn-warning">Fetch Recent Measurements</button>
                     <button id="btnWeeklySummary" class="btn btn-primary">View Weekly Summary</button>
-                    <button id="btnDetailedView" class="btn btn-info">View Detailed Daily Data</button>
                 </div>
-
-                <div id="measurementDataCharts">
-                    <canvas id="measurementChart" class="chart"></canvas>  
+                
+                <div class="form-group">
+                    <label for="selectedDate">Select Date:</label>
+                    <input type="date" id="selectedDate" class="form-control">
                 </div>
+                
+                <canvas id="heartRateChart" class="chart"></canvas>
+                <canvas id="bloodOxygenChart" class="chart"></canvas>
             </div>
         </div>
 
@@ -131,8 +133,11 @@
     </div>
 
     <!-- JavaScript Initialization -->
-    <script>
-        $(document).ready(() => {
+    <script type="module">
+        import { checkAuth } from './javascripts/hearttrack.js';
+    
+        // Use checkAuth in the initialization
+        document.addEventListener('DOMContentLoaded', () => {
             checkAuth(); // Ensure the user is authenticated
         });
     </script>

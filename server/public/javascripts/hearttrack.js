@@ -1,3 +1,6 @@
+
+import { formatTimestamp, renderChart, filterLastSevenDays } from './chart_utils.js';
+
 function registerUser() {
     const email = $('#email').val();
     const password = $('#password').val();
@@ -239,110 +242,27 @@ function viewDeviceData() {
         });
 }
 
-function formatChartData(data) {
-    const chartData = {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Heart Rate',
-          data: []
-        }]
-      }
-    };
-  
-    data.data.measurements.forEach(measurement => {
-    
-        chartData.data.labels.push(new Date(measurement.timestamp).toLocaleString());
-
-        chartData.data.datasets[0].data.push(measurement.heartRate);
-    });
-  
-    return chartData;
-  }
-
-  function fetchAllMeasurements() {
-    const deviceId = $('#measurementDeviceId').val(); // Use the new input field
+// Generalized fetch function
+function fetchMeasurements(deviceId, limit, onSuccess, selectedDate = null) {
     if (!deviceId) {
         window.alert("Device ID for measurements is required!");
         return;
     }
 
+    let url = `/devices/data?deviceId=${deviceId}&limit=${limit}`;
+
+    if (selectedDate) {
+        url += `&date=${selectedDate}`; // Append selected date to the URL if provided
+    }
+
     $.ajax({
-        url: `/devices/data?deviceId=${deviceId}&limit=-1`, // Fetch all measurements
+        url: url,
         method: 'GET',
         dataType: 'json'
     })
         .done(data => {
-            console.log("All Measurements:", data);
-
             if (data.data.measurements && data.data.measurements.length > 0) {
-                const measurements = data.data.measurements;
-
-                // Prepare data for Chart.js
-                const chartLabels = [];
-                const chartDataset = [];
-
-                measurements.forEach(measurement => {
-                    chartLabels.push(new Date(measurement.timestamp).toLocaleTimeString()); // Format as readable time
-                    chartDataset.push(measurement.heartRate);
-                });
-
-                console.log("Chart Labels:", chartLabels);
-                console.log("Chart Dataset:", chartDataset);
-
-                // Create or update the chart
-                const ctx = document.getElementById('measurementChart').getContext('2d');
-
-                if (window.myChart) {
-                    // If the chart already exists, update it
-                    window.myChart.data.labels = chartLabels;
-                    window.myChart.data.datasets[0].data = chartDataset;
-                    window.myChart.update();
-                } else {
-                    // Create a new chart instance
-                    window.myChart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: chartLabels,
-                            datasets: [{
-                                label: 'Heart Rate (bpm)',
-                                data: chartDataset,
-                                borderColor: 'rgba(255, 99, 132, 1)',
-                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                tension: 0.4 // Smooth line
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            plugins: {
-                                legend: {
-                                    display: true,
-                                    position: 'top'
-                                },
-                                tooltip: {
-                                    mode: 'index',
-                                    intersect: false
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    title: {
-                                        display: true,
-                                        text: 'Time'
-                                    }
-                                },
-                                y: {
-                                    title: {
-                                        display: true,
-                                        text: 'Heart Rate (bpm)'
-                                    },
-                                    beginAtZero: true
-                                }
-                            }
-                        }
-                    });
-                }
+                onSuccess(data.data.measurements);
             } else {
                 $('#recentMeasurementDisplay').html("<p>No measurements found for this device.</p>");
                 window.alert("No measurements found for this device.");
@@ -352,93 +272,47 @@ function formatChartData(data) {
         })
         .fail(data => {
             $('#rxData').html(JSON.stringify(data.responseJSON, null, 2));
-            window.alert("Failed to fetch all measurements.");
+            window.alert("Failed to fetch measurements.");
         });
 }
 
-
-
-function fetchRecentMeasurements() {
-    const deviceId = $('#measurementDeviceId').val(); // Use the new input field
-    if (!deviceId) {
-        window.alert("Device ID for measurements is required!");
-        return;
-    }
-
-    $.ajax({
-        url: `/devices/data?deviceId=${deviceId}&limit=1`, // Fetch the most recent measurement
-        method: 'GET',
-        dataType: 'json'
-    })
-        .done(data => {
-            if (data.data.measurements && data.data.measurements.length > 0) {
-                const recentMeasurement = data.data.measurements[0];
-                const htmlContent = `
-                    <h4>Most Recent Measurement</h4>
-                    <p><strong>Heart Rate:</strong> ${recentMeasurement.heartRate} bpm</p>
-                    <p><strong>Blood Oxygen Saturation:</strong> ${recentMeasurement.bloodOxygenSaturation}%</p>
-                    <p><strong>Timestamp:</strong> ${new Date(recentMeasurement.timestamp).toLocaleString()}</p>
-                `;
-                $('#recentMeasurementDisplay').html(htmlContent);
-            } else {
-                $('#recentMeasurementDisplay').html("<p>No measurements found for this device.</p>");
-                window.alert("No measurements found for this device.");
-            }
-            $('#rxData').html(JSON.stringify(data, null, 2));
-        })
-        .fail(data => {
-            $('#rxData').html(JSON.stringify(data.responseJSON, null, 2));
-            window.alert("Failed to fetch recent measurements.");
-        });
-}
-
-function fetchWeeklySummary() {
+// Fetch all measurements and display in chart
+function fetchAllMeasurements() {
     const deviceId = $('#measurementDeviceId').val();
-    const token = localStorage.getItem('authToken');
+    const selectedDate = $('#selectedDate').val(); // Get selected date from the input field
 
-    if (!deviceId) {
-        window.alert("Device ID for measurements is required!");
-        return;
-    }
+    fetchMeasurements(deviceId, -1, measurements => {
+        const chartLabels = measurements.map(m => formatTimestamp(m.timestamp));
+        const chartDataset = measurements.map(m => m.heartRate);
+        renderChart(chartLabels, chartDataset, document.getElementById('heartRateChart'), "Heart Rate (bpm)");
+    }, selectedDate);
 
-    if (!token) {
-        window.alert("No token found. Please log in again.");
-        return;
-    }
+    fetchMeasurements(deviceId, -1, measurements => {
+        const chartLabels = measurements.map(m => formatTimestamp(m.timestamp));
+        const chartDataset = measurements.map(m => m.bloodOxygenSaturation);
+        console.log("measurements", measurements);  
+        console.log("chartLabels", chartLabels);
+        console.log("chartDataset", chartDataset);
+        renderChart(chartLabels, chartDataset, document.getElementById('bloodOxygenChart'), "Blood Oxygen Saturation (%)");
+    }, selectedDate);
+}
 
-    $.ajax({
-        url: `/devices/weekly-summary?deviceId=${deviceId}`,
-        method: 'GET',
-        headers: { Authorization: `Bearer ${token}` },
-        dataType: 'json'
-    })
-        .done(data => {
-            const { average, min, max } = data.summary;
 
-            const ctx = document.getElementById('weeklySummaryChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Average', 'Minimum', 'Maximum'],
-                    datasets: [{
-                        label: 'Heart Rate (bpm)',
-                        data: [average, min, max],
-                        backgroundColor: ['rgba(75, 192, 192, 0.2)'],
-                        borderColor: ['rgba(75, 192, 192, 1)'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-        })
-        .fail(data => {
-            console.error("Failed to fetch weekly summary:", data.responseJSON);
-            window.alert("Failed to fetch weekly summary.");
-        });
+// Fetch weekly summary and display in charts
+export function fetchWeeklySummary() {
+    const deviceId = $('#measurementDeviceId').val();
+
+    fetchMeasurements(deviceId, -1, measurements => {
+        const pastWeekData = filterLastSevenDays(measurements);
+
+        const chartLabelsHeartRate = pastWeekData.map(measurement => new Date(measurement.timestamp).toLocaleString());
+        const chartDatasetHeartRate = pastWeekData.map(measurement => measurement.heartRate);
+        renderChart(chartLabelsHeartRate, chartDatasetHeartRate, document.getElementById('heartRateChart'), "Heart Rate (bpm)");
+
+        const chartLabelsOxygen = pastWeekData.map(measurement => new Date(measurement.timestamp).toLocaleString());
+        const chartDatasetOxygen = pastWeekData.map(measurement => measurement.bloodOxygenSaturation);
+        renderChart(chartLabelsOxygen, chartDatasetOxygen, document.getElementById('bloodOxygenChart'), "Blood Oxygen Saturation (%)");
+    });
 }
 
 
@@ -522,7 +396,7 @@ function fetchDetailedView() {
 }
 
 
-function checkAuth() {
+export function checkAuth() {
     const token = localStorage.getItem('authToken');
     if (!token) {
         window.location.href = 'login.html'; // Redirect to login if not logged in
@@ -553,7 +427,6 @@ $(function () {
     $('#btnRegisterDevice').click(registerDevice);
     $('#btnViewDeviceData').click(viewDeviceData);
     $('#btnFetchAll').click(fetchAllMeasurements);
-    $('#btnFetchRecent').click(fetchRecentMeasurements);
     $('#btnUpdatePassword').click(updatePassword);
     $('#btnRemoveDevice').click(removeDevice);
     $('#btnWeeklySummary').click(fetchWeeklySummary);
