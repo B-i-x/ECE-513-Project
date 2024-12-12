@@ -47,9 +47,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const devicesRouter = require('./routes/devices');
+const physiciansRouter = require('./routes/physicians');
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/devices', devicesRouter);
+app.use('/physicians', physiciansRouter);
 
 app.use(function (err, req, res, next) {
     res.status(err.status || 500).json({
