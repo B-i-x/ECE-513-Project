@@ -8,6 +8,13 @@ local
 !/local/
 !/server/
 
+# Whitelist everything in the parent folders
+!/docs/**
+!/embedded/**
+!/local/**
+!/server/**
+
+
 # Whitelist README.md at the root level
 !/README.md
 

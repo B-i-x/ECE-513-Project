@@ -1,8 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { User } = require('../models/hearttrack');
 require('dotenv').config(); // Load environment variables
+const { Device, User, Measurement } = require("../models/hearttrack");
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET; // Retrieve the secret key from the environment variable
@@ -187,8 +187,8 @@ router.post('/claim-device', authenticateToken, async (req, res) => {
 
 router.get('/unclaimed-devices', async (req, res) => {
     try {
-        // Find all devices where owner is null
-        const devices = await Device.find({ owner: null });
+        // Fetch devices where the owner is null
+        const devices = await Device.find({ owner: null }, 'deviceId'); // Fetch only required fields
         res.status(200).json({ devices });
     } catch (err) {
         console.error("Error fetching unclaimed devices:", err.message);
@@ -196,16 +196,19 @@ router.get('/unclaimed-devices', async (req, res) => {
     }
 });
 
+
 router.get('/devices', authenticateToken, async (req, res) => {
     try {
-        // Find all devices claimed by the authenticated user
-        const devices = await Device.find({ owner: req.user.id });
+        // Fetch devices where the owner matches the authenticated user
+        const devices = await Device.find({ owner: req.user.id }, 'deviceId')
+
         res.status(200).json({ devices });
     } catch (err) {
         console.error("Error fetching claimed devices:", err.message);
         res.status(500).json({ message: "Error fetching claimed devices.", error: err.message });
     }
 });
+
 
 
 
