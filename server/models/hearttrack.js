@@ -27,11 +27,6 @@ const deviceSchema = new mongoose.Schema({
         startTime: { type: String }, // e.g., "08:00"
         endTime: { type: String },   // e.g., "20:00"
         frequency: { type: Number } // Frequency in minutes
-    },
-    ssid: {
-        type: String,
-        required: true, // Ensure that SSID is always provided
-        trim: true
     }
 });
 
