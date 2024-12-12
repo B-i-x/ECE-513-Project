@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    
     <script src="javascripts/hearttrack.js"></script>
 </head>
 <body>
@@ -57,6 +59,10 @@
                     <button id="btnFetchRecent" class="btn btn-warning">Fetch Recent Measurements</button>
                     <button id="btnWeeklySummary" class="btn btn-primary">View Weekly Summary</button>
                     <button id="btnDetailedView" class="btn btn-info">View Detailed Daily Data</button>
+                </div>
+
+                <div id="measurementDataCharts">
+                    <canvas id="measurementChart" class="chart"></canvas>  
                 </div>
             </div>
         </div>

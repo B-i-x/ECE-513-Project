@@ -239,7 +239,29 @@ function viewDeviceData() {
         });
 }
 
-function fetchAllMeasurements() {
+function formatChartData(data) {
+    const chartData = {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Heart Rate',
+          data: []
+        }]
+      }
+    };
+  
+    data.data.measurements.forEach(measurement => {
+    
+        chartData.data.labels.push(new Date(measurement.timestamp).toLocaleString());
+
+        chartData.data.datasets[0].data.push(measurement.heartRate);
+    });
+  
+    return chartData;
+  }
+
+  function fetchAllMeasurements() {
     const deviceId = $('#measurementDeviceId').val(); // Use the new input field
     if (!deviceId) {
         window.alert("Device ID for measurements is required!");
@@ -252,25 +274,80 @@ function fetchAllMeasurements() {
         dataType: 'json'
     })
         .done(data => {
-            if (data.data.measurements && data.data.measurements.length > 0) {
-                const allMeasurements = data.data.measurements;
+            console.log("All Measurements:", data);
 
-                let htmlContent = `<h4>All Measurements</h4>`;
-                allMeasurements.forEach(measurement => {
-                    htmlContent += `
-                        <div style="margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
-                            <p><strong>Heart Rate:</strong> ${measurement.heartRate} bpm</p>
-                            <p><strong>Blood Oxygen Saturation:</strong> ${measurement.bloodOxygenSaturation}%</p>
-                            <p><strong>Timestamp:</strong> ${new Date(measurement.timestamp).toLocaleString()}</p>
-                        </div>
-                    `;
+            if (data.data.measurements && data.data.measurements.length > 0) {
+                const measurements = data.data.measurements;
+
+                // Prepare data for Chart.js
+                const chartLabels = [];
+                const chartDataset = [];
+
+                measurements.forEach(measurement => {
+                    chartLabels.push(new Date(measurement.timestamp).toLocaleTimeString()); // Format as readable time
+                    chartDataset.push(measurement.heartRate);
                 });
 
-                $('#recentMeasurementDisplay').html(htmlContent);
+                console.log("Chart Labels:", chartLabels);
+                console.log("Chart Dataset:", chartDataset);
+
+                // Create or update the chart
+                const ctx = document.getElementById('measurementChart').getContext('2d');
+
+                if (window.myChart) {
+                    // If the chart already exists, update it
+                    window.myChart.data.labels = chartLabels;
+                    window.myChart.data.datasets[0].data = chartDataset;
+                    window.myChart.update();
+                } else {
+                    // Create a new chart instance
+                    window.myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: chartLabels,
+                            datasets: [{
+                                label: 'Heart Rate (bpm)',
+                                data: chartDataset,
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                tension: 0.4 // Smooth line
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                },
+                                tooltip: {
+                                    mode: 'index',
+                                    intersect: false
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Time'
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Heart Rate (bpm)'
+                                    },
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
             } else {
                 $('#recentMeasurementDisplay').html("<p>No measurements found for this device.</p>");
                 window.alert("No measurements found for this device.");
             }
+
             $('#rxData').html(JSON.stringify(data, null, 2));
         })
         .fail(data => {
@@ -278,6 +355,7 @@ function fetchAllMeasurements() {
             window.alert("Failed to fetch all measurements.");
         });
 }
+
 
 
 function fetchRecentMeasurements() {
