@@ -5,6 +5,8 @@
   - [Table of Contents](#table-of-contents)
   - [Project Description](#project-description)
     - [Key Features:](#key-features)
+  - [Technologies Used](#technologies-used)
+  - [Project Structure](#project-structure)
   - [Team Members](#team-members)
   - [System Requirements](#system-requirements)
   - [Installation Instructions](#installation-instructions)
@@ -12,7 +14,7 @@
     - [Starting the Server:](#starting-the-server)
   - [How to Use](#how-to-use)
   - [APIs and Libraries Used](#apis-and-libraries-used)
-  - [Project Structure](#project-structure)
+  - [Project Structure](#project-structure-1)
   - [Video Links](#video-links)
   - [Login Credentials](#login-credentials)
     - [User Account:](#user-account)
@@ -24,6 +26,9 @@
 
 ## Project Description
 Heart Track is a low-cost IoT-enabled web application for monitoring heart rate and blood oxygen saturation levels. The application supports real-time data transmission from IoT devices, enabling users to monitor their vitals via a responsive web interface on desktops, tablets, and smartphones.
+
+[Link to website](https://ec2-54-151-120-233.us-west-1.compute.amazonaws.com:3001/)
+
 
 ### Key Features:
 - Account creation and management.
