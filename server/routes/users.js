@@ -151,5 +151,47 @@ router.delete("/remove-device", authenticateToken, async (req, res) => {
 });
 
 
+// Get data for a specific device using query parameters, with limit and sorted by most recent
+router.get('/data', async (req, res) => {
+    const { deviceId, limit } = req.query;
+
+    if (!deviceId) {
+        return res.status(400).json({ message: "Device ID is required as a query parameter." });
+    }
+
+    try {
+        const device = await Device.findOne({ deviceId }).populate('measurements');
+
+        if (!device) {
+            return res.status(404).json({ message: "Device not found." });
+        }
+        let measurements = device.measurements;
+
+        // Sort measurements by timestamp in descending order
+        measurements.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        // Limit the number of data points returned
+        if (limit !== undefined) {
+            const numLimit = parseInt(limit, 10);
+            if (isNaN(numLimit) || numLimit < -1) {
+                return res.status(400).json({ message: "Invalid limit value. Must be -1 or a positive integer." });
+            }
+
+            if (numLimit !== -1) {
+                measurements = measurements.slice(0, numLimit);
+            }
+        }
+
+        res.status(200).json({
+            message: "Device data retrieved.",
+            data: {
+                ...device.toObject(), // Include the device object
+                measurements: measurements,
+            },
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching device data.", error: err.message });
+    }
+});
 
 module.exports = router;
