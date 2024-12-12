@@ -112,7 +112,7 @@ router.put('/update-password', authenticateToken, async (req, res) => {
 });
 
 
-router.delete("/remove-device", authenticateToken, async (req, res) => {
+router.delete("/unclaim-device", authenticateToken, async (req, res) => {
     const { deviceId } = req.body;
 
     if (!deviceId) {
@@ -149,6 +149,64 @@ router.delete("/remove-device", authenticateToken, async (req, res) => {
         res.status(500).json({ message: "Error removing device.", error: err.message });
     }
 });
+
+router.post('/claim-device', authenticateToken, async (req, res) => {
+    const { deviceId } = req.body;
+
+    if (!deviceId) {
+        return res.status(400).json({ message: "Device ID is required." });
+    }
+
+    try {
+        // Find the device with the given ID and ensure it is unclaimed (no owner)
+        const device = await Device.findOne({ deviceId, owner: null });
+        if (!device) {
+            return res.status(404).json({ message: "Device not found or already claimed." });
+        }
+
+        // Assign the device to the user
+        device.owner = req.user.id;
+        await device.save();
+
+        // Add the device to the user's devices list
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        user.devices.push(device._id);
+        await user.save();
+
+        res.status(200).json({ message: "Device claimed successfully.", device });
+    } catch (err) {
+        console.error("Error claiming device:", err.message);
+        res.status(500).json({ message: "Error claiming device.", error: err.message });
+    }
+});
+
+
+router.get('/unclaimed-devices', async (req, res) => {
+    try {
+        // Find all devices where owner is null
+        const devices = await Device.find({ owner: null });
+        res.status(200).json({ devices });
+    } catch (err) {
+        console.error("Error fetching unclaimed devices:", err.message);
+        res.status(500).json({ message: "Error fetching unclaimed devices.", error: err.message });
+    }
+});
+
+router.get('/devices', authenticateToken, async (req, res) => {
+    try {
+        // Find all devices claimed by the authenticated user
+        const devices = await Device.find({ owner: req.user.id });
+        res.status(200).json({ devices });
+    } catch (err) {
+        console.error("Error fetching claimed devices:", err.message);
+        res.status(500).json({ message: "Error fetching claimed devices.", error: err.message });
+    }
+});
+
 
 
 // Get data for a specific device using query parameters, with limit and sorted by most recent

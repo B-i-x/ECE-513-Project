@@ -27,14 +27,7 @@ if (SERVER_ENV != 'local') {
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-// Middleware
-// app.use((req, res, next) => {
-//     if (!req.secure && req.get('Host')) {
-//         const secureUrl = `https://${req.get('Host').replace(/:\d+$/, ":3443")}${req.url}`;
-//         return res.redirect(secureUrl);
-//     }
-//     next();
-// });
+
 morgan.token('body', (req) => JSON.stringify(req.body));
 
 // Use Morgan with the custom token
