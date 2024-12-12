@@ -74,10 +74,11 @@ function calculateStats(measurements, key) {
 }
 
 function updateStats(view, stats, type) {
-    $(`#${view}${type}Max`).text(stats.max);
-    $(`#${view}${type}Min`).text(stats.min);
-    $(`#${view}${type}Avg`).text(stats.avg);
+    $(`#${view}Max`).text(stats.max);
+    $(`#${view}Min`).text(stats.min);
+    $(`#${view}Avg`).text(stats.avg);
 }
+
 function loadWeeklyView() {
     const deviceId = $('#measurementDeviceId').find(':selected').val();
 
