@@ -1,4 +1,15 @@
 local
+# Ignore everything by default
+*
+
+# Whitelist parent folders
+!/docs/
+!/embedded/
+!/local/
+!/server/
+
+# Whitelist README.md at the root level
+!/README.md
 
 # Logs
 logs
