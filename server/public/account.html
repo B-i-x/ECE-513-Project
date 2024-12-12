@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="javascripts/hearttrack.js"></script>
+    <script src="javascripts/account.js"></script>
 </head>
 <body>
     <!-- Navbar -->
@@ -36,12 +36,22 @@
         <br />
     </div>
 
+    <!-- JavaScript Initialization -->
+    <script type="module">
+        import { checkAuth } from './javascripts/auth.js';
+    
+        // Use checkAuth in the initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth(); // Ensure the user is authenticated
+        });
+    </script>
+
     <!-- JavaScript -->
     <script>
         $(document).ready(() => {
-            checkAuth(); // Ensure the user is authenticated
             displayUserEmail(); // Display the email
         });
     </script>
+    
 </body>
 </html>

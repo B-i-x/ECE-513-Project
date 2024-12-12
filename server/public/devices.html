@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     
-    <script type="module" src="javascripts/hearttrack.js"></script>
+    <script type="module" src="javascripts/deviceFrontend.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-default">
@@ -50,26 +50,40 @@
         <div class="row">
             <div class="col-xs-12">
                 <h3>Measurement Data</h3>
+
+                <!-- Filter Section -->
                 <div class="form-group">
-                    <label for="measurementDeviceId">Device ID for Measurements:</label>
-                    <input type="text" id="measurementDeviceId" class="form-control" placeholder="Enter device ID for measurements">
+                    <label for="measurementDeviceId">Device ID:</label>
+                    <input type="text" id="measurementDeviceId" class="form-control" placeholder="Enter device ID">
                 </div>
+
+                <div class="form-group">
+                    <label for="selectedFilter">Select Filter:</label>
+                    <select id="selectedFilter" class="form-control">
+                        <option value="all">All Data</option>
+                        <option value="weekly">Past 7 Days</option>
+                        <option value="custom">Custom Date Range</option>
+                    </select>
+                </div>
+
+                <div class="form-group custom-date-range d-none">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" id="startDate" class="form-control">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" id="endDate" class="form-control">
+                </div>
+
                 <div class="text-center">
-                    <button id="btnFetchAll" class="btn btn-success">Fetch All Data</button>
-                    <button id="btnWeeklySummary" class="btn btn-primary">View Weekly Summary</button>
+                    <button id="btnShowData" class="btn btn-primary">Show Data</button>
                 </div>
-                
-                <div class="form-group">
-                    <label for="selectedDate">Select Date:</label>
-                    <input type="date" id="selectedDate" class="form-control">
-                </div>
-                
+
+                <!-- Charts -->
                 <canvas id="heartRateChart" class="chart"></canvas>
                 <canvas id="bloodOxygenChart" class="chart"></canvas>
             </div>
         </div>
-
         <hr />
+
 
         <!-- Measurement Scheduling Section -->
         <div class="row">
@@ -134,7 +148,7 @@
 
     <!-- JavaScript Initialization -->
     <script type="module">
-        import { checkAuth } from './javascripts/hearttrack.js';
+        import { checkAuth } from './javascripts/auth.js';
     
         // Use checkAuth in the initialization
         document.addEventListener('DOMContentLoaded', () => {

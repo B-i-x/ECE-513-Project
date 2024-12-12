@@ -112,6 +112,44 @@ router.put('/update-password', authenticateToken, async (req, res) => {
 });
 
 
+router.delete("/remove-device", authenticateToken, async (req, res) => {
+    const { deviceId } = req.body;
+
+    if (!deviceId) {
+        return res.status(400).json({ message: "Device ID is required." });
+    }
+
+    try {
+        // Find the user by ID from the token
+        const user = await User.findById(req.user.id).populate("devices");
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // Check if the device belongs to the user
+        const deviceIndex = user.devices.findIndex(
+            (device) => device.deviceId === deviceId
+        );
+        if (deviceIndex === -1) {
+            return res
+                .status(404)
+                .json({ message: "Device not associated with this user." });
+        }
+
+        // Remove the device from the user's devices list
+        const deviceToRemove = user.devices[deviceIndex];
+        user.devices.splice(deviceIndex, 1);
+        await user.save();
+
+        // Optionally, delete the device from the database
+        await Device.findByIdAndDelete(deviceToRemove._id);
+
+        res.status(200).json({ message: "Device removed successfully." });
+    } catch (err) {
+        res.status(500).json({ message: "Error removing device.", error: err.message });
+    }
+});
+
 
 
 module.exports = router;
