@@ -128,6 +128,8 @@ function populateDeviceDropdown(devices) {
         devices.forEach(device => {
             dropdown.append(`<option value="${device.deviceId}">${device.deviceId}</option>`);
         });
+        dropdown.find('option:first').prop('selected', true); // Select the first device
+
     } else {
         dropdown.append('<option value="">No devices available</option>');
     }

@@ -62,45 +62,66 @@
         <hr />
 
 
-        <!-- Measurement Data Section -->
+        <!-- Tabbed Measurement Data Section -->
         <div class="row">
             <div class="col-xs-12">
-                <h3>Measurement Data</h3>
+                <h3>Your Data</h3>
+                <label for="measurementDeviceId">Device ID:</label>
+                <select id="measurementDeviceId" class="form-control">
+                <!-- Options will be dynamically populated by JavaScript -->
+                </select>
 
-                <!-- Filter Section -->
-                <div class="form-group">
-                    <label for="measurementDeviceId">Device ID:</label>
-                    <select id="measurementDeviceId" class="form-control">
-                        <!-- Options will be dynamically populated by JavaScript -->
-                    </select>
+
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs" id="dataTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="weekly-tab" data-toggle="tab" href="#weekly" role="tab" aria-controls="weekly" aria-selected="true">Weekly View</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="daily-tab" data-toggle="tab" href="#daily" role="tab" aria-controls="daily" aria-selected="false">Daily View</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="lifetime-tab" data-toggle="tab" href="#lifetime" role="tab" aria-controls="lifetime" aria-selected="false">Lifetime View</a>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="dataTabsContent">
+                    <!-- Weekly View Tab -->
+                    <div class="tab-pane active" id="weekly" role="tabpanel" aria-labelledby="weekly-tab">
+                        <h4>Weekly View</h4>
+                        <div id="weeklyStats">
+                            <p><strong>Heart Rate</strong>: Max: <span id="weeklyHRMax"></span>, Min: <span id="weeklyHRMin"></span>, Avg: <span id="weeklyHRAvg"></span></p>
+                            <p><strong>Blood Oxygen</strong>: Max: <span id="weeklyBOMax"></span>, Min: <span id="weeklyBOMin"></span>, Avg: <span id="weeklyBOAvg"></span></p>
+                        </div>
+                        <canvas id="weeklyHeartRateChart" class="chart"></canvas>
+                        <canvas id="weeklyBloodOxygenChart" class="chart"></canvas>
+                    </div>
+
+                    <!-- Daily View Tab -->
+                    <div class="tab-pane" id="daily" role="tabpanel" aria-labelledby="daily-tab">
+                        <h4>Daily View</h4>
+                        <div id="dailyStats">
+                            <p><strong>Heart Rate</strong>: Max: <span id="dailyHRMax"></span>, Min: <span id="dailyHRMin"></span>, Avg: <span id="dailyHRAvg"></span></p>
+                            <p><strong>Blood Oxygen</strong>: Max: <span id="dailyBOMax"></span>, Min: <span id="dailyBOMin"></span>, Avg: <span id="dailyBOAvg"></span></p>
+                        </div>
+                        <canvas id="dailyHeartRateChart" class="chart"></canvas>
+                        <canvas id="dailyBloodOxygenChart" class="chart"></canvas>
+                    </div>
+
+                    <!-- Lifetime View Tab -->
+                    <div class="tab-pane" id="lifetime" role="tabpanel" aria-labelledby="lifetime-tab">
+                        <h4>Lifetime View</h4>
+                        <div id="lifetimeStats">
+                            <p><strong>Heart Rate</strong>: Max: <span id="lifetimeHRMax"></span>, Min: <span id="lifetimeHRMin"></span>, Avg: <span id="lifetimeHRAvg"></span></p>
+                            <p><strong>Blood Oxygen</strong>: Max: <span id="lifetimeBOMax"></span>, Min: <span id="lifetimeBOMin"></span>, Avg: <span id="lifetimeBOAvg"></span></p>
+                        </div>
+                        <canvas id="lifetimeHeartRateChart" class="chart"></canvas>
+                        <canvas id="lifetimeBloodOxygenChart" class="chart"></canvas>
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label for="selectedFilter">Select Filter:</label>
-                    <select id="selectedFilter" class="form-control">
-                        <option value="all">All Data</option>
-                        <option value="weekly">Past 7 Days</option>
-                        <option value="custom">Custom Date Range</option>
-                    </select>
-                </div>
-
-                <div class="form-group custom-date-range d-none">
-                    <label for="startDate">Start Date:</label>
-                    <input type="date" id="startDate" class="form-control">
-                    <label for="endDate">End Date:</label>
-                    <input type="date" id="endDate" class="form-control">
-                </div>
-
-                <div class="text-center">
-                    <button id="btnShowData" class="btn btn-primary">Show Data</button>
-                </div>
-
-                <!-- Charts -->
-                <canvas id="heartRateChart" class="chart"></canvas>
-                <canvas id="bloodOxygenChart" class="chart"></canvas>
             </div>
         </div>
-        <hr />
 
 
         <!-- Measurement Scheduling Section -->

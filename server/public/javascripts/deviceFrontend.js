@@ -1,10 +1,10 @@
 
-import { formatTimestamp, renderChart, filterLastSevenDays } from './chart_utils.js';
-import { removeDevice, loadDeviceTables, searchAndClaimDevice } from './claming.js';
+import { renderChart } from './chart_utils.js';
 
+import { removeDevice, loadDeviceTables, searchAndClaimDevice } from './claming.js';
 window.removeDevice = removeDevice;
 
-
+const apiUrl = '/users/data'; // Replace with your API base URL
 
 
 
@@ -44,78 +44,124 @@ function setSchedule() {
 }
 
 
-// Fetch and display filtered data
-function fetchFilteredData(deviceId, filterOptions) {
-    fetchMeasurements(deviceId, -1, measurements => {
-        let filteredData = measurements;
-
-        // Apply filters on the client-side
-        if (filterOptions.lastSevenDays) {
-            filteredData = filterLastSevenDays(measurements);
-        } else if (filterOptions.startDate && filterOptions.endDate) {
-            filteredData = filterByCustomDateRange(measurements, filterOptions.startDate, filterOptions.endDate);
-        }
-
-        // Prepare data for Heart Rate chart
-        const chartLabelsHeartRate = filteredData.map(measurement => new Date(measurement.timestamp).toLocaleString());
-        const chartDatasetHeartRate = filteredData.map(measurement => measurement.heartRate);
-        renderChart(chartLabelsHeartRate, chartDatasetHeartRate, document.getElementById('heartRateChart'), "Heart Rate (bpm)");
-
-        // Prepare data for Blood Oxygen chart
-        const chartLabelsOxygen = filteredData.map(measurement => new Date(measurement.timestamp).toLocaleString());
-        const chartDatasetOxygen = filteredData.map(measurement => measurement.bloodOxygenSaturation);
-        renderChart(chartLabelsOxygen, chartDatasetOxygen, document.getElementById('bloodOxygenChart'), "Blood Oxygen Saturation (%)");
-    });
-}
-
-// Utility function to filter data by custom date range
-function filterByCustomDateRange(measurements, startDate, endDate) {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    return measurements.filter(measurement => {
-        const timestamp = new Date(measurement.timestamp);
-        return timestamp >= start && timestamp <= end;
-    });
-}
-
-// Generalized fetch function
-function fetchMeasurements(deviceId, limit, onSuccess, selectedDate = null) {
-    if (!deviceId) {
-        window.alert("Device ID for measurements is required!");
-        return;
-    }
-
-    let url = `/users/data?deviceId=${deviceId}&limit=${limit}`;
-
-    if (selectedDate) {
-        url += `&date=${selectedDate}`; // Append selected date to the URL if provided
-    }
-
-    $.ajax({
-        url: url,
-        method: 'GET',
-        dataType: 'json'
-    })
-        .done(data => {
-            if (data.data.measurements && data.data.measurements.length > 0) {
-                onSuccess(data.data.measurements);
-            } else {
-                $('#recentMeasurementDisplay').html("<p>No measurements found for this device.</p>");
-                window.alert("No measurements found for this device.");
-            }
-
-            $('#rxData').html(JSON.stringify(data, null, 2));
-        })
-        .fail(data => {
-            $('#rxData').html(JSON.stringify(data.responseJSON, null, 2));
-            window.alert("Failed to fetch measurements.");
-        });
-}
 
 function logoutUser() {
     localStorage.removeItem('authToken'); // Remove the token
     window.location.href = 'login.html'; // Redirect to login page
+}
+
+function fetchData(params) {
+    const queryString = $.param(params);
+    return $.ajax({
+        url: `${apiUrl}?${queryString}`,
+        method: 'GET',
+        dataType: 'json',
+    }).then(response => response.data.measurements).catch(error => {
+        console.error('Error fetching data:', error);
+        return [];
+    });
+}
+
+function calculateStats(measurements, key) {
+    if (!measurements.length) return { max: '-', min: '-', avg: '-' };
+
+    const values = measurements.map(m => m[key]);
+    const max = Math.max(...values);
+    const min = Math.min(...values);
+    const avg = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2);
+
+    return { max, min, avg };
+}
+
+function updateStats(view, stats, type) {
+    $(`#${view}${type}Max`).text(stats.max);
+    $(`#${view}${type}Min`).text(stats.min);
+    $(`#${view}${type}Avg`).text(stats.avg);
+}
+function loadWeeklyView() {
+    const deviceId = $('#measurementDeviceId').find(':selected').val();
+
+    if (!deviceId) {
+        alert('Please select a valid device ID.');
+        console.error('No device ID selected.');
+        return;
+    }
+
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 7);
+
+    fetchData({ deviceId, startDate: startDate.toISOString().split('T')[0] }).then(measurements => {
+        if (measurements.length === 0) {
+            console.warn('No measurements retrieved for weekly view.');
+            alert('No data available for the selected device.');
+            return;
+        }
+
+        console.log('Weekly measurements:', measurements);
+
+        const labels = measurements.map(m => new Date(m.timestamp).toLocaleString());
+        const heartRateData = measurements.map(m => m.heartRate);
+        const bloodOxygenData = measurements.map(m => m.bloodOxygenSaturation);
+
+        console.log('Labels:', labels);
+        console.log('Heart Rate Data:', heartRateData);
+        console.log('Blood Oxygen Data:', bloodOxygenData);
+
+        const heartRateStats = calculateStats(measurements, 'heartRate');
+        const bloodOxygenStats = calculateStats(measurements, 'bloodOxygenSaturation');
+
+        console.log('Heart Rate Stats:', heartRateStats);
+        console.log('Blood Oxygen Stats:', bloodOxygenStats);
+
+        updateStats('weeklyHR', heartRateStats, 'HR');
+        updateStats('weeklyBO', bloodOxygenStats, 'BO');
+
+        renderChart('weeklyHeartRateChart', labels, heartRateData, 'Heart Rate (bpm)');
+        renderChart('weeklyBloodOxygenChart', labels, bloodOxygenData, 'Blood Oxygen Saturation (%)');
+    }).catch(error => {
+        console.error('Error fetching weekly data:', error);
+    });
+}
+
+
+function loadDailyView() {
+    const deviceId = $('#measurementDeviceId').find(':selected').val();
+
+    const startDate = new Date().toISOString().split('T')[0];
+
+    fetchData({ deviceId, startDate }).then(measurements => {
+        const labels = measurements.map(m => new Date(m.timestamp).toLocaleTimeString());
+        const heartRateData = measurements.map(m => m.heartRate);
+        const bloodOxygenData = measurements.map(m => m.bloodOxygenSaturation);
+
+        const heartRateStats = calculateStats(measurements, 'heartRate');
+        const bloodOxygenStats = calculateStats(measurements, 'bloodOxygenSaturation');
+
+        updateStats('dailyHR', heartRateStats, 'HR');
+        updateStats('dailyBO', bloodOxygenStats, 'BO');
+
+        renderChart('dailyHeartRateChart', labels, heartRateData, 'Heart Rate (bpm)');
+        renderChart('dailyBloodOxygenChart', labels, bloodOxygenData, 'Blood Oxygen Saturation (%)');
+    });
+}
+
+function loadLifetimeView() {
+    const deviceId = $('#measurementDeviceId').find(':selected').val();
+
+    fetchData({ deviceId }).then(measurements => {
+        const labels = measurements.map(m => new Date(m.timestamp).toLocaleString());
+        const heartRateData = measurements.map(m => m.heartRate);
+        const bloodOxygenData = measurements.map(m => m.bloodOxygenSaturation);
+
+        const heartRateStats = calculateStats(measurements, 'heartRate');
+        const bloodOxygenStats = calculateStats(measurements, 'bloodOxygenSaturation');
+
+        updateStats('lifetimeHR', heartRateStats, 'HR');
+        updateStats('lifetimeBO', bloodOxygenStats, 'BO');
+
+        renderChart('lifetimeHeartRateChart', labels, heartRateData, 'Heart Rate (bpm)');
+        renderChart('lifetimeBloodOxygenChart', labels, bloodOxygenData, 'Blood Oxygen Saturation (%)');
+    });
 }
 
 $(function () {
@@ -129,36 +175,10 @@ $(function () {
     loadDeviceTables();
     $('#btnSearchUnclaimedDevice').on('click', searchAndClaimDevice);
 
-    // Handle filter visibility
-    $('#selectedFilter').on('change', function () {
-        if ($(this).val() === 'custom') {
-            $('.custom-date-range').removeClass('d-none');
-        } else {
-            $('.custom-date-range').addClass('d-none');
-        }
-    });
 
-    // Handle "Show Data" button click
-    $('#btnShowData').on('click', () => {
-        const deviceId = $('#measurementDeviceId').val();
-        const filter = $('#selectedFilter').val();
-        const startDate = $('#startDate').val();
-        const endDate = $('#endDate').val();
-
-        if (!deviceId) {
-            alert("Device ID is required!");
-            return;
-        }
-
-        let filterOptions = {};
-        if (filter === 'weekly') {
-            filterOptions = { lastSevenDays: true };
-        } else if (filter === 'custom' && startDate && endDate) {
-            filterOptions = { startDate, endDate };
-        }
-
-        // Fetch and display data
-        fetchFilteredData(deviceId, filterOptions);
-    });
+    // Bind tab click events
+    $('#weekly-tab').on('click', loadWeeklyView);
+    $('#daily-tab').on('click', loadDailyView);
+    $('#lifetime-tab').on('click', loadLifetimeView);
 
 });
