@@ -1,5 +1,5 @@
 const express = require("express");
-const { Device, User } = require("../models/hearttrack");
+const { Device, User, Measurement } = require("../models/hearttrack");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
@@ -156,12 +156,15 @@ router.post('/data', async (req, res) => {
         return res.status(400).json({ message: "bpm and bOx must be valid numbers." });
     }
 
+    console.log("gets here"); // Debug log
+
     try {
         // Find the device by deviceId
         const device = await Device.findOne({ deviceId });
         if (!device) {
             return res.status(404).json({ message: "Device not found." });
         }
+        console.log("test: ", device._id); // Debug log
 
         // Create a new Measurement
         const newMeasurement = new Measurement({
@@ -169,6 +172,10 @@ router.post('/data', async (req, res) => {
             bloodOxygenSaturation,
             device: device._id,
         });
+
+
+        console.log("New measurement is:", newMeasurement); // Debug log
+        console.log("please"); // Debug log
 
         // Save the measurement
         await newMeasurement.save();
