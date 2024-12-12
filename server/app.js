@@ -13,10 +13,11 @@ const app = express();
 
 const SERVER_ENV = process.env.SERVER_ENV;
 
+let httpsOptions;
 console.log('SERVER_ENV:', SERVER_ENV);
 if (SERVER_ENV != 'local') {
     // SSL Certificate setup for HTTPS
-    const httpsOptions = {
+    httpsOptions = {
         key: fs.readFileSync('server.key'),
         cert: fs.readFileSync('server.cert')
     };
@@ -67,9 +68,10 @@ app.use(function (err, req, res, next) {
 // Create HTTP and HTTPS servers
 const httpServer = http.createServer(app);
 
+let httpsServer;
 if (SERVER_ENV !== 'local') {
     // Create HTTPS server
-    const httpsServer = https.createServer(httpsOptions, app);
+    httpsServer = https.createServer(httpsOptions, app);
 }
 
 // Define ports
