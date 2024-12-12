@@ -32,19 +32,44 @@
         <div class="row">
             <div class="col-xs-12">
                 <h3>Manage Devices</h3>
-                <div class="form-group">
-                    <label for="deviceId">Device ID:</label>
-                    <input type="text" id="deviceId" class="form-control" placeholder="Enter device ID">
-                </div>
+
+                <!-- Table for Unclaimed Devices -->
+                <h4>Unclaimed Devices</h4>
+                <table id="unclaimedDevicesTable" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Device ID</th>
+                            <th>Register Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Unclaimed devices will be dynamically populated here -->
+                    </tbody>
+                </table>
+
+                <!-- Table for User-Owned Devices -->
+                <h4>Your Devices</h4>
+                <table id="userDevicesTable" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Device ID</th>
+                            <th>Register Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- User-owned devices will be dynamically populated here -->
+                    </tbody>
+                </table>
+
                 <div class="text-center">
-                    <button id="btnRegisterDevice" class="btn btn-primary">Register Device</button>
-                    <button id="btnRemoveDevice" class="btn btn-danger">Remove Device</button>
-                    <button id="btnViewDeviceData" class="btn btn-info">View Device Data</button>
+                    <button id="btnRefreshDevices" class="btn btn-primary">Refresh Devices</button>
                 </div>
             </div>
         </div>
-
         <hr />
+
 
         <!-- Measurement Data Section -->
         <div class="row">
