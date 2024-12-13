@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema({
 });
 
 
-// Device Schema
 const deviceSchema = new mongoose.Schema({
     deviceId: {
         type: String,
@@ -25,9 +24,18 @@ const deviceSchema = new mongoose.Schema({
         { type: mongoose.Schema.Types.ObjectId, ref: "Measurement" }
     ],
     schedule: {
-        startTime: { type: String }, // e.g., "08:00"
-        endTime: { type: String },   // e.g., "20:00"
-        frequency: { type: Number } // Frequency in minutes
+        startTime: { 
+            type: Number, // Representing the start hour (e.g., 6 for 6 AM)
+            default: 6    // Default start time
+        },
+        endTime: { 
+            type: Number, // Representing the end hour (e.g., 22 for 10 PM)
+            default: 22   // Default end time
+        },
+        frequency: { 
+            type: Number, // Frequency in minutes
+            default: 30   // Default frequency
+        }
     }
 });
 

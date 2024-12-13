@@ -2,8 +2,8 @@ const express = require("express");
 const { Device, User, Measurement } = require("../models/hearttrack");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-
 const router = express.Router();
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const authenticateApiKey = (req, res, next) => {
@@ -96,45 +96,43 @@ router.post('/data', async (req, res) => {
     }
 });
 
-// // Route to get timing data for a device
-// router.get("/timing-data", authenticateToken, async (req, res) => {
-//     const { deviceId } = req.query;
-
-//     if (!deviceId) {
-//         return res.status(400).json({ message: "Device ID is required as a query parameter." });
-//     }
-
-//     try {
-//         // Find the device by deviceId and ensure it belongs to the authenticated user
-//         const device = await Device.findOne({ deviceId, owner: req.user.id });
-//         if (!device) {
-//             return res.status(404).json({ message: "Device not found or not owned by the user." });
-//         }
-
-//         // Default values
-//         const defaultSchedule = {
-//             startTime: 6,
-//             endTime: 22,
-//             frequencyMin: 30,
-//         };
-
-//         // Use the device's schedule if it exists, otherwise use defaults
-//         const schedule = device.schedule || defaultSchedule;
-
-//         res.status(200).json({
-//             message: "Timing data retrieved successfully.",
-//             schedule: {
-//                 startTime: schedule.startTime || defaultSchedule.startTime,
-//                 endTime: schedule.endTime || defaultSchedule.endTime,
-//                 frequencyMin: schedule.frequencyMin || defaultSchedule.frequencyMin,
-//             },
-//         });
-//     } catch (err) {
-//         console.error("Error fetching timing data:", err.message);
-//         res.status(500).json({ message: "Error fetching timing data.", error: err.message });
-//     }
-// });
+// Route to get timing data for a device
 
 
+// Route to get timing data for a specific device
+router.get('/timing-data', async (req, res) => {
+    try {
+        // Get the deviceId from the query parameters
+        const { deviceId } = req.query;
+
+        // Validate that deviceId is provided
+        if (!deviceId) {
+            return res.status(400).json({ error: "Device ID is required" });
+        }
+
+        // Find the device in the database
+        const device = await Device.findOne({ deviceId });
+
+        // If the device is not found, return an error
+        if (!device) {
+            return res.status(404).json({ error: "Device not found" });
+        }
+
+        // Extract timing data from the device
+        const { schedule } = device;
+        const { startTime, endTime, frequency } = schedule;
+
+        // Return the timing data
+        res.json({
+            deviceId,
+            startTime,
+            endTime,
+            frequency
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
 module.exports = router;
 

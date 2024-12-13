@@ -97,15 +97,16 @@ Heart Track is a low-cost IoT-enabled web application for monitoring heart rate 
 
 ---
 
-## APIs and Libraries Used
+## APIs
 - Node.js, Express.js, MongoDB for server-side logic.
 - RESTful APIs for communication between IoT devices and the server.
+
+---
+## Libraries Used
 - Third-party libraries for data visualization:
   - Plotting library for charts (e.g., Chart.js).
   - Responsive CSS frameworks (e.g., Bootstrap).
-
 ---
-
 ## Project Structure
     root/
     ├── public/
