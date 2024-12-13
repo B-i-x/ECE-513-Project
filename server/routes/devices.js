@@ -108,6 +108,7 @@ router.get('/timing-data', async (req, res) => {
 
         // Validate that deviceId is provided
         if (!deviceId) {
+            console.error("Device ID is missing in the request");
             return res.status(400).json({ error: "Device ID is required" });
         }
 
@@ -116,25 +117,29 @@ router.get('/timing-data', async (req, res) => {
 
         // If the device is not found, return an error
         if (!device) {
+            console.error(`Device with ID ${deviceId} not found`);
             return res.status(404).json({ error: "Device not found" });
         }
 
         // Extract timing data from the device
         const { schedule } = device;
+        if (!schedule) {
+            console.error(`Schedule not found for device ID ${deviceId}`);
+            return res.status(404).json({ error: "Schedule not found for this device" });
+        }
+
         const { startTime, endTime, frequency } = schedule;
 
         // Return the timing data
-        res.status(201).json({
-            deviceId,
-            startTime,
-            endTime,
-            frequency
-        });
-        console.log("Timing data sent successfully, response is:", json({ deviceId, startTime, endTime, frequency }));
+        const response = { deviceId, startTime, endTime, frequency };
+        console.log("Timing data response:", response); // Debugging output
+        res.status(200).json(response);
     } catch (error) {
-        console.error(error);
+        console.error("Error fetching timing data:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
+
+
 module.exports = router;
 

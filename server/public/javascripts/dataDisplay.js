@@ -245,7 +245,7 @@ $(function () {
     // Bind tab click events
     $('#weekly-tab').on('click', function () { 
         activateTabPane('weekly');
-        loadWeeklyView;
+        loadWeeklyView();
     });
 
     $('#daily-tab').on('click', function () {
