@@ -31,6 +31,18 @@
             <h3>Welcome, <span id="userEmailDisplay"></span></h3>
             <h4 id="accountTypeDisplay" class="text-muted"></h4> <!-- Placeholder for account type -->
         </div>
+
+        <div class="form-group">
+            <label for="physicianSelect">Select Your Physician:</label>
+            <select id="physicianSelect" class="form-control">
+                <option value="">Select a physician...</option>
+                <!-- Options will be dynamically populated -->
+            </select>
+        </div>
+
+        <div class="text-center">
+            <button id="btnAssignPhysician" class="btn btn-success">Assign Physician</button>
+        </div>
         
         <div class="text-center">
             <button onclick="location.href='update-password.html'" class="btn btn-primary">Update Password</button>

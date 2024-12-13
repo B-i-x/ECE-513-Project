@@ -311,4 +311,90 @@ router.get('/data', async (req, res) => {
 });
 
 
+
+////////////////////////physician stuff/////////////////////////
+
+
+
+// POST /users/register-patient - Register a patient to a physician
+router.post("/register-patient", async (req, res) => {
+    const { patientEmail, physicianId } = req.body;
+
+    if (!patientEmail || !physicianId) {
+        return res.status(400).json({ message: "Patient email and physician ID are required." });
+    }
+
+    try {
+        // Find the physician by ID
+        const physician = await User.findById(physicianId);
+        if (!physician || physician.role !== "physician") {
+            return res.status(404).json({ message: "Physician not found or invalid role." });
+        }
+
+        // Find the patient by email
+        let patient = await User.findOne({ email: patientEmail });
+        if (!patient) {
+            // If patient does not exist, create a new patient
+            const hashedPassword = await bcrypt.hash("defaultpassword", 10); // Generate default password
+            patient = new User({
+                email: patientEmail,
+                password: hashedPassword,
+                role: "patient",
+            });
+            await patient.save();
+        } else if (patient.role !== "patient") {
+            return res.status(400).json({ message: "The provided email is not associated with a patient role." });
+        }
+
+        // Check if the patient is already assigned to the physician
+        const existingRelation = await PhysicianPatient.findOne({
+            physician: physicianId,
+            patient: patient._id,
+        });
+
+        if (existingRelation) {
+            return res.status(409).json({ message: "This patient is already assigned to the physician." });
+        }
+
+        // Create the physician-patient relationship
+        const newRelation = new PhysicianPatient({
+            physician: physician._id,
+            patient: patient._id,
+        });
+        await newRelation.save();
+
+        res.status(201).json({
+            message: `Patient (${patient.email}) registered to Physician (${physician.email}) successfully.`,
+            relation: {
+                physician: physician.email,
+                patient: patient.email,
+            },
+        });
+    } catch (err) {
+        console.error("Error registering patient to physician:", err.message);
+        res.status(500).json({ message: "Error registering patient to physician.", error: err.message });
+    }
+});
+
+// GET /users/physicians - Fetch all physicians' emails
+router.get("/physicians", async (req, res) => {
+    try {
+        // Find all users with the role "physician"
+        const physicians = await User.find({ role: "physician" }, "email specialization");
+
+        if (physicians.length === 0) {
+            return res.status(404).json({ message: "No physicians found." });
+        }
+
+        res.status(200).json({
+            message: "Physicians retrieved successfully.",
+            physicians,
+        });
+    } catch (err) {
+        console.error("Error fetching physicians:", err.message);
+        res.status(500).json({ message: "Error fetching physicians.", error: err.message });
+    }
+});
+
+
 module.exports = router;
