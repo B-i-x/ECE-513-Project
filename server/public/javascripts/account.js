@@ -99,18 +99,41 @@ function assignPhysician() {
     });
 }
 
-// Display the current physician for the patient
-function displayCurrentPhysician(physicianEmail) {
-    const currentPhysicianDisplay = $('#currentPhysician');
-    if (physicianEmail) {
-        currentPhysicianDisplay.text(`Your current physician: ${physicianEmail}`);
-    } else {
-        currentPhysicianDisplay.text('You have not assigned a physician yet.');
-    }
-}
+function fetchAssignedPhysicians() {
+    $.ajax({
+        url: '/users/assigned-physicians',
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+        },
+        success: (data) => {
+            const assignedPhysiciansList = $('#assignedPhysiciansList');
+            assignedPhysiciansList.empty();
+
+            if (data.assignedPhysicians && data.assignedPhysicians.length > 0) {
+                data.assignedPhysicians.forEach((physician) => {
+                    assignedPhysiciansList.append(
+                        `<li class="list-group-item">${physician.email} (${physician.specialization || 'General'})</li>`
+                    );
+                });
+            } else {
+                assignedPhysiciansList.append(
+                    '<li class="list-group-item text-muted">No assigned physicians.</li>'
+                );
+            }
+        },
+        error: (err) => {
+            console.error('Error fetching assigned physicians:', err);
+            $('#assignedPhysiciansList').html(
+                '<li class="list-group-item text-danger">Error loading assigned physicians.</li>'
+            );
+        },
+    });
+};
+
 
 $(document).ready(() => {
-    
+    fetchAssignedPhysicians();
 
     // Attach event listener to the assign button
     $('#btnAssignPhysician').click(() => {

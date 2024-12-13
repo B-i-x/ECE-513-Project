@@ -405,5 +405,37 @@ router.get("/physicians", async (req, res) => {
     }
 });
 
+// GET /users/assigned-physicians - Fetch all physicians assigned to the authenticated user
+router.get('/assigned-physicians', authenticateToken, async (req, res) => {
+    try {
+        console.log('Authenticated user:', req.user); // Debug log
+
+        // Assuming the user ID is extracted from a verified JWT and stored in `req.user`
+        const userId = req.user.id;
+
+        // Ensure the user exists
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // Fetch all physician-patient relationships for this user
+        const physicianRelations = await physicianPatient.find({ patient: userId }).populate('physician', 'email specialization');
+
+        // Extract physician information
+        const assignedPhysicians = physicianRelations.map(relation => ({
+            email: relation.physician.email,
+            specialization: relation.physician.specialization,
+        }));
+
+        res.status(200).json({
+            message: 'Assigned physicians retrieved successfully.',
+            assignedPhysicians,
+        });
+    } catch (err) {
+        console.error('Error fetching assigned physicians:', err.message);
+        res.status(500).json({ message: 'Error fetching assigned physicians.', error: err.message });
+    }
+});
 
 module.exports = router;
