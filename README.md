@@ -13,8 +13,14 @@
     - [Prerequisites:](#prerequisites)
     - [Starting the Server:](#starting-the-server)
   - [How to Use](#how-to-use)
-  - [APIs and Libraries Used](#apis-and-libraries-used)
+  - [APIs](#apis)
+  - [Libraries Used](#libraries-used)
   - [Project Structure](#project-structure-1)
+    - [server/](#server)
+    - [Resources](#resources)
+    - [Public Scripts](#public-scripts)
+    - [Stylesheets](#stylesheets)
+    - [Views](#views)
   - [Video Links](#video-links)
   - [Login Credentials](#login-credentials)
     - [User Account:](#user-account)
@@ -108,21 +114,48 @@ Heart Track is a low-cost IoT-enabled web application for monitoring heart rate 
   - Responsive CSS frameworks (e.g., Bootstrap).
 ---
 ## Project Structure
-    root/
-    ├── public/
-    │   ├── css/
-    │   ├── js/
-    │   ├── index.html
-    │   ├── reference.html
-    ├── routes/
-    │   ├── api.js
-    │   ├── user.js
-    ├── models/
-    │   ├── User.js
-    │   ├── Device.js
-    ├── server.js
-    ├── README.md
-    ├── package.json
+
+### server/
+- **public/**
+  - **css/**
+  - **js/**
+  - **index.html**
+  - **reference.html**
+- **routes/**
+  - **api.js**
+  - **user.js**
+- **models/**
+  - **User.js**
+  - **Device.js**
+- **server.js**
+- **README.md**
+- **package.json**
+
+### Resources
+- **res/**
+  - AlexPhoto.png
+  - DasolPhoto.png
+  - MasonPhoto.jpg
+
+### Public Scripts
+- **javascripts/**
+  - account.js
+  - auth.js
+  - chart_utils.js
+  - deviceFetching.js
+  - login.js
+  - logout.js
+
+### Stylesheets
+- **site.css**
+
+### Views
+- **account.html**
+- **devices.html**
+- **index.html**
+- **login.html**
+- **reference.html**
+- **update-password.html**
 
 ---
 

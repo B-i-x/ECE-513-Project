@@ -33,7 +33,10 @@ export function renderChart(canvasId, labels, data, label) {
             },
             scales: {
                 x: { title: { display: true, text: 'Timestamp' } },
-                y: { title: { display: true, text: label } },
+                y: { 
+                    title: { display: true, text: label },
+                    beginAtZero: true, // Ensure y-axis starts at 0
+                },
             },
         },
     });
