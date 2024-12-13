@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config(); // Load environment variables
-const { Device, User, Measurement } = require("../models/hearttrack");
+const { Device, User, Measurement, physicianPatient } = require("../models/hearttrack");
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET; // Retrieve the secret key from the environment variable
@@ -321,48 +321,54 @@ router.post("/register-patient", async (req, res) => {
     const { patientEmail, physicianId } = req.body;
 
     if (!patientEmail || !physicianId) {
+        console.error("Missing required fields: patientEmail or physicianId.");
         return res.status(400).json({ message: "Patient email and physician ID are required." });
     }
 
     try {
+        console.log(`Attempting to find physician with ID: ${physicianId}`);
         // Find the physician by ID
         const physician = await User.findById(physicianId);
         if (!physician || physician.role !== "physician") {
+            console.error(`Physician not found or invalid role for ID: ${physicianId}`);
             return res.status(404).json({ message: "Physician not found or invalid role." });
         }
+        console.log(`Physician found: ${physician.email}, Role: ${physician.role}`);
 
+        console.log(`Attempting to find or create patient with email: ${patientEmail}`);
         // Find the patient by email
         let patient = await User.findOne({ email: patientEmail });
         if (!patient) {
-            // If patient does not exist, create a new patient
-            const hashedPassword = await bcrypt.hash("defaultpassword", 10); // Generate default password
-            patient = new User({
-                email: patientEmail,
-                password: hashedPassword,
-                role: "patient",
-            });
-            await patient.save();
+            console.log(`Patient with email ${patientEmail} not found. `);
+            
         } else if (patient.role !== "patient") {
+            console.error(`User with email ${patientEmail} is not a patient. Role: ${patient.role}`);
             return res.status(400).json({ message: "The provided email is not associated with a patient role." });
+        } else {
+            console.log(`Patient found with email: ${patient.email}`);
         }
 
+        console.log(`Checking for existing relationship between Physician (${physicianId}) and Patient (${patient._id})`);
         // Check if the patient is already assigned to the physician
-        const existingRelation = await PhysicianPatient.findOne({
+        const existingRelation = await physicianPatient.findOne({
             physician: physicianId,
             patient: patient._id,
         });
 
         if (existingRelation) {
+            console.error("This patient is already assigned to the physician.");
             return res.status(409).json({ message: "This patient is already assigned to the physician." });
         }
 
+        console.log("No existing relationship found. Creating new relationship.");
         // Create the physician-patient relationship
-        const newRelation = new PhysicianPatient({
+        const newRelation = new physicianPatient({
             physician: physician._id,
             patient: patient._id,
         });
         await newRelation.save();
 
+        console.log(`Relationship created: Physician (${physician.email}) - Patient (${patient.email})`);
         res.status(201).json({
             message: `Patient (${patient.email}) registered to Physician (${physician.email}) successfully.`,
             relation: {
@@ -372,9 +378,12 @@ router.post("/register-patient", async (req, res) => {
         });
     } catch (err) {
         console.error("Error registering patient to physician:", err.message);
+        console.error("Stack trace:", err.stack);
         res.status(500).json({ message: "Error registering patient to physician.", error: err.message });
     }
 });
+
+
 
 // GET /users/physicians - Fetch all physicians' emails
 router.get("/physicians", async (req, res) => {
