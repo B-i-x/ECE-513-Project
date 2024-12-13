@@ -131,9 +131,10 @@ function loadDailyView() {
         return;
     }
 
-    const startDate = new Date().toISOString().split('T')[0]; // Current day in YYYY-MM-DD format
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 1);
 
-    fetchData({ deviceId, startDate }).then(measurements => {
+    fetchData({ deviceId, startDate: startDate.toISOString().split('T')[0] }).then(measurements => {
         if (measurements.length === 0) {
             console.warn('No measurements retrieved for daily view.');
             alert('No data available for the selected device.');
@@ -242,10 +243,11 @@ $(function () {
 
 
     // Bind tab click events
-    $('#weekly-tab').on('click', 
-        loadWeeklyView,
-        activateTabPane('weekly')
-    );
+    $('#weekly-tab').on('click', function () { 
+        activateTabPane('weekly');
+        loadWeeklyView;
+    });
+
     $('#daily-tab').on('click', function () {
         activateTabPane('daily');
         loadDailyView();
@@ -255,6 +257,5 @@ $(function () {
         loadLifetimeView();
     });
 
-    // Activate the default tab (weekly) on page load
-    activateTabPane('weekly');
+
 });
