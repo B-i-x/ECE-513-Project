@@ -67,7 +67,6 @@ const physicianPatientSchema = new mongoose.Schema({
     },
 });
 
-const mongoose = require("mongoose");
 
 // Create Models
 const User = mongoose.model("User", userSchema);
