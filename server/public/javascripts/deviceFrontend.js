@@ -45,10 +45,7 @@ function setSchedule() {
 
 
 
-function logoutUser() {
-    localStorage.removeItem('authToken'); // Remove the token
-    window.location.href = 'login.html'; // Redirect to login page
-}
+
 
 function fetchData(params) {
     const queryString = $.param(params);
@@ -210,11 +207,34 @@ function activateTabPane(tabId) {
 
 
 $(function () {
-    $('#btnLogout').click(logoutUser);
     $('#btnSetSchedule').click(function (e) {
         e.preventDefault(); // Prevent form submission
         setSchedule(); // Call the schedule setting function
     });
+
+    const userRole = localStorage.getItem('userRole'); // Get the role from localStorage
+
+    // Dynamically modify the layout based on user role
+    if (userRole === 'physician') {
+        // Modify the header for physicians
+        $('h3').text("Manage Patients' Devices");
+        $('h4').text("Your Patients' Devices");
+
+        // Hide the section for searching and claiming unclaimed devices
+        $('#searchDeviceId').closest('.form-group').hide();
+        $('#btnSearchUnclaimedDevice').hide();
+        $("#searchUnclaimedLabel").hide();
+    } else if (userRole === 'patient') {
+        // Ensure everything is visible for patients
+        $('h3').text("Manage Devices");
+        $('h4').text("Your Devices");
+        $('#searchDeviceId').closest('.form-group').show();
+        $('#btnSearchUnclaimedDevice').show();
+    } else {
+        console.warn("No user role defined or invalid role.");
+        alert("Invalid role. Please log in again.");
+        window.location.href = 'login.html';
+    }
 
     // Initial load
     loadDeviceTables();

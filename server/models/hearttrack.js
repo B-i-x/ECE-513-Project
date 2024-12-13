@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true, trim: true }, // Unique email field
     password: { type: String, required: true }, // Store hashed passwords
     devices: [{ type: mongoose.Schema.Types.ObjectId, ref: "Device" }], // References to registered devices
+    role: { type: String, enum: ["patient", "physician"], default: "patient" }, // Role to distinguish users
 });
 
 
@@ -57,13 +58,33 @@ const measurementSchema = new mongoose.Schema({
     device: { type: mongoose.Schema.Types.ObjectId, ref: "Device" }, // References the device
 });
 
+const physicianPatientSchema = new mongoose.Schema({
+    physician: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+    patient: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+});
+
+
 // Create Models
 const User = mongoose.model("User", userSchema);
 const Device = mongoose.model("Device", deviceSchema);
 const Measurement = mongoose.model("Measurement", measurementSchema);
+const physicianPatient = mongoose.model("PhysicianPatient", physicianPatientSchema);
 
 module.exports = {
     User,
     Device,
     Measurement,
+    physicianPatient
 };

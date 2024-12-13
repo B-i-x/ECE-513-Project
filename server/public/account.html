@@ -26,14 +26,41 @@
     <!-- Account Management -->
     <div class="container">
         <h1 class="text-center">Account Management</h1>
+    
         <div class="text-center">
             <h3>Welcome, <span id="userEmailDisplay"></span></h3>
+            <h4 id="accountTypeDisplay" class="text-muted"></h4> <!-- Placeholder for account type -->
         </div>
+
+        <div class="form-group patient-view" >
+            <label for="physicianSelect">Select Your Physician:</label>
+            <select id="physicianSelect" class="form-control">
+                <option value="">Select a physician...</option>
+                <!-- Options will be dynamically populated -->
+            </select>
+        </div>
+
+        <div class="text-center patient-view">
+            <button id="btnAssignPhysician" class="btn btn-success">Assign Physician</button>
+        </div>
+        
+        <!-- New Section for Displaying Currently Assigned Physicians -->
+        <div class="form-group mt-4 patient-view">
+            <h4>Currently Assigned Physicians</h4>
+            <ul id="assignedPhysiciansList" class="list-group">
+                <!-- List of assigned physicians will be dynamically populated -->
+            </ul>
+        </div>
+
         <div class="text-center">
             <button onclick="location.href='update-password.html'" class="btn btn-primary">Update Password</button>
-            <button onclick="location.href='devices.html'" class="btn btn-info">Manage Devices</button>
         </div>
         <br />
+        
+        <div class="text-center">
+            <button onclick="location.href='devices.html'" class="btn btn-info">Go to Device Portal</button>
+        </div>
+
     </div>
 
     <!-- JavaScript Initialization -->
@@ -50,6 +77,16 @@
     <script>
         $(document).ready(() => {
             displayUserEmail(); // Display the email
+        });
+    </script>
+
+    <script type="module">
+        import { logoutUser } from './javascripts/logout.js';
+
+        // Attach the logout functionality
+        document.getElementById('btnLogout').addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default link behavior
+            logoutUser();
         });
     </script>
     
