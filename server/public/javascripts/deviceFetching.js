@@ -29,7 +29,7 @@ export function loadDeviceTables() {
 
             success: function(data) {
                 console.log('Patient devices data:', data);
-                populateTable('#userDevicesTable tbody', data.devices, false); // No "Remove" action for physicians
+                populateTable('#userDevicesTable tbody', data.devices, false, true); // Include patient emails for physicians
                 populateDeviceDropdown(data.devices);
             },
             error: function(err) {
@@ -46,7 +46,7 @@ export function loadDeviceTables() {
 
             success: function(data) {
                 console.log('User devices data:', data);
-                populateTable('#userDevicesTable tbody', data.devices, true);
+                populateTable('#userDevicesTable tbody', data.devices, true, false);
                 populateDeviceDropdown(data.devices);
             },
             error: function(err) {
@@ -57,7 +57,7 @@ export function loadDeviceTables() {
 }
 
 // Function to populate a table with devices
-function populateTable(selector, devices, addActions = false) {
+function populateTable(selector, devices, addActions = false, includePatientEmail = false) {
     const tbody = $(selector);
     tbody.empty(); // Clear existing rows
 
@@ -65,6 +65,10 @@ function populateTable(selector, devices, addActions = false) {
         const row = $('<tr>');
 
         row.append(`<td>${device.deviceId}</td>`);
+
+        if (includePatientEmail && device.patientEmail) {
+            row.append(`<td>${device.patientEmail}</td>`);
+        }
 
         if (addActions) {
             row.append(`
