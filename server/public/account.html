@@ -55,6 +55,16 @@
             displayUserEmail(); // Display the email
         });
     </script>
+
+    <script type="module">
+        import { logoutUser } from './javascripts/logout.js';
+
+        // Attach the logout functionality
+        document.getElementById('btnLogout').addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default link behavior
+            logoutUser();
+        });
+    </script>
     
 </body>
 </html>

@@ -45,10 +45,7 @@ function setSchedule() {
 
 
 
-function logoutUser() {
-    localStorage.removeItem('authToken'); // Remove the token
-    window.location.href = 'login.html'; // Redirect to login page
-}
+
 
 function fetchData(params) {
     const queryString = $.param(params);
@@ -210,7 +207,6 @@ function activateTabPane(tabId) {
 
 
 $(function () {
-    $('#btnLogout').click(logoutUser);
     $('#btnSetSchedule').click(function (e) {
         e.preventDefault(); // Prevent form submission
         setSchedule(); // Call the schedule setting function
