@@ -30,6 +30,7 @@ export function loadDeviceTables() {
             success: function(data) {
                 console.log('Patient devices data:', data);
                 populateTable('#userDevicesTable tbody', data.devices, false); // No "Remove" action for physicians
+                populateDeviceDropdown(data.devices);
             },
             error: function(err) {
                 console.error('Error fetching patient devices:', err);
