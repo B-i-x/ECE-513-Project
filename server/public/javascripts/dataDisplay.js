@@ -1,7 +1,7 @@
 
 import { renderChart } from './chart_utils.js';
 
-import { removeDevice, loadDeviceTables, searchAndClaimDevice } from './claming.js';
+import { removeDevice, loadDeviceTables, searchAndClaimDevice } from './deviceFetching.js';
 window.removeDevice = removeDevice;
 
 const apiUrl = '/users/data'; // Replace with your API base URL
@@ -45,10 +45,7 @@ function setSchedule() {
 
 
 
-function logoutUser() {
-    localStorage.removeItem('authToken'); // Remove the token
-    window.location.href = 'login.html'; // Redirect to login page
-}
+
 
 function fetchData(params) {
     const queryString = $.param(params);
@@ -134,9 +131,10 @@ function loadDailyView() {
         return;
     }
 
-    const startDate = new Date().toISOString().split('T')[0]; // Current day in YYYY-MM-DD format
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 1);
 
-    fetchData({ deviceId, startDate }).then(measurements => {
+    fetchData({ deviceId, startDate: startDate.toISOString().split('T')[0] }).then(measurements => {
         if (measurements.length === 0) {
             console.warn('No measurements retrieved for daily view.');
             alert('No data available for the selected device.');
@@ -210,11 +208,34 @@ function activateTabPane(tabId) {
 
 
 $(function () {
-    $('#btnLogout').click(logoutUser);
     $('#btnSetSchedule').click(function (e) {
         e.preventDefault(); // Prevent form submission
         setSchedule(); // Call the schedule setting function
     });
+
+    const userRole = localStorage.getItem('userRole'); // Get the role from localStorage
+
+    // Dynamically modify the layout based on user role
+    if (userRole === 'physician') {
+        // Modify the header for physicians
+        $('h3').text("Manage Patients' Devices");
+        $('h4').text("Your Patients' Devices");
+
+        // Hide the section for searching and claiming unclaimed devices
+        $('#searchDeviceId').closest('.form-group').hide();
+        $('#btnSearchUnclaimedDevice').hide();
+        $("#searchUnclaimedLabel").hide();
+    } else if (userRole === 'patient') {
+        // Ensure everything is visible for patients
+        $('h3').text("Manage Devices");
+        $('h4').text("Your Devices");
+        $('#searchDeviceId').closest('.form-group').show();
+        $('#btnSearchUnclaimedDevice').show();
+    } else {
+        console.warn("No user role defined or invalid role.");
+        alert("Invalid role. Please log in again.");
+        window.location.href = 'login.html';
+    }
 
     // Initial load
     loadDeviceTables();
@@ -222,10 +243,11 @@ $(function () {
 
 
     // Bind tab click events
-    $('#weekly-tab').on('click', 
-        loadWeeklyView,
-        activateTabPane('weekly')
-    );
+    $('#weekly-tab').on('click', function () { 
+        activateTabPane('weekly');
+        loadWeeklyView();
+    });
+
     $('#daily-tab').on('click', function () {
         activateTabPane('daily');
         loadDailyView();
@@ -235,6 +257,5 @@ $(function () {
         loadLifetimeView();
     });
 
-    // Activate the default tab (weekly) on page load
-    activateTabPane('weekly');
+
 });

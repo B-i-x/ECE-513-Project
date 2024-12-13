@@ -5,10 +5,10 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true, trim: true }, // Unique email field
     password: { type: String, required: true }, // Store hashed passwords
     devices: [{ type: mongoose.Schema.Types.ObjectId, ref: "Device" }], // References to registered devices
+    role: { type: String, enum: ["patient", "physician"], default: "patient" }, // Role to distinguish users
 });
 
 
-// Device Schema
 const deviceSchema = new mongoose.Schema({
     deviceId: {
         type: String,
@@ -24,9 +24,18 @@ const deviceSchema = new mongoose.Schema({
         { type: mongoose.Schema.Types.ObjectId, ref: "Measurement" }
     ],
     schedule: {
-        startTime: { type: String }, // e.g., "08:00"
-        endTime: { type: String },   // e.g., "20:00"
-        frequency: { type: Number } // Frequency in minutes
+        startTime: { 
+            type: Number, // Representing the start hour (e.g., 6 for 6 AM)
+            default: 6    // Default start time
+        },
+        endTime: { 
+            type: Number, // Representing the end hour (e.g., 22 for 10 PM)
+            default: 22   // Default end time
+        },
+        frequency: { 
+            type: Number, // Frequency in minutes
+            default: 30   // Default frequency
+        }
     }
 });
 
@@ -49,13 +58,33 @@ const measurementSchema = new mongoose.Schema({
     device: { type: mongoose.Schema.Types.ObjectId, ref: "Device" }, // References the device
 });
 
+const physicianPatientSchema = new mongoose.Schema({
+    physician: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+    patient: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+});
+
+
 // Create Models
 const User = mongoose.model("User", userSchema);
 const Device = mongoose.model("Device", deviceSchema);
 const Measurement = mongoose.model("Measurement", measurementSchema);
+const physicianPatient = mongoose.model("PhysicianPatient", physicianPatientSchema);
 
 module.exports = {
     User,
     Device,
     Measurement,
+    physicianPatient
 };

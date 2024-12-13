@@ -1,9 +1,10 @@
 const express = require("express");
 const { Device, User, Measurement } = require("../models/hearttrack");
 const jwt = require("jsonwebtoken");
+const { json } = require("body-parser");
 require("dotenv").config();
-
 const router = express.Router();
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const authenticateApiKey = (req, res, next) => {

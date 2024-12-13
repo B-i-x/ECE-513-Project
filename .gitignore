@@ -5,13 +5,11 @@ local
 # Whitelist parent folders
 !/docs/
 !/embedded/
-!/local/
 !/server/
 
 # Whitelist everything in the parent folders
 !/docs/**
 !/embedded/**
-!/local/**
 !/server/**
 
 

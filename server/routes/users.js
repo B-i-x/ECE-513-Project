@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config(); // Load environment variables
-const { Device, User, Measurement } = require("../models/hearttrack");
+const { Device, User, Measurement, physicianPatient } = require("../models/hearttrack");
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET; // Retrieve the secret key from the environment variable
@@ -12,26 +12,52 @@ if (!JWT_SECRET) {
     process.exit(1); // Exit the app if the secret key is missing
 }
 
-router.post('/register', async (req, res) => {
-    const { email, password } = req.body;
+// POST /users/register - Register a new user
+router.post("/register", async (req, res) => {
+    const { email, password, role, specialization } = req.body;
 
     if (!email || !password) {
-        return res.status(400).json({ message: "Username and password are required." });
+        return res.status(400).json({ message: "Email and password are required." });
+    }
+
+    if (role && !["patient", "physician"].includes(role)) {
+        return res.status(400).json({ message: "Invalid role. Allowed values are 'patient' or 'physician'." });
     }
 
     try {
+        // Check if the email is already registered
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            console.error(`Registration failed: Email (${email}) already exists.`);
+            return res.status(409).json({ message: "Email is already registered." });
+        }
+
+        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
         console.log("Generated hash during registration:", hashedPassword);
 
-        const newUser = new User({ email, password: hashedPassword });
+        // Create and save the new user
+        const newUser = new User({
+            email,
+            password: hashedPassword,
+            role: role || "patient", // Default to "patient" if role is not provided
+            specialization: role === "physician" ? specialization : undefined, // Only for physicians
+        });
         await newUser.save();
 
-        const savedUser = await User.findOne({ email }); // Query the saved user
-        console.log("Saved user in DB:", savedUser); // Log the stored hash to confirm
+        console.log("New user created:", { id: newUser._id, email: newUser.email, role: newUser.role });
 
-        res.status(201).json({ message: `User (${email}) registered successfully.` });
+        res.status(201).json({
+            message: `User (${email}) registered successfully.`,
+            user: {
+                id: newUser._id,
+                email: newUser.email,
+                role: newUser.role,
+                specialization: newUser.specialization,
+            },
+        });
     } catch (err) {
-        console.error("Error during registration:", err.message);
+        console.error("Error during user registration:", err.message);
         res.status(500).json({ message: "Error registering user.", error: err.message });
     }
 });
@@ -281,6 +307,157 @@ router.get('/data', async (req, res) => {
         });
     } catch (err) {
         res.status(500).json({ message: "Error fetching device data.", error: err.message });
+    }
+});
+
+
+
+////////////////////////physician stuff/////////////////////////
+
+
+
+// POST /users/register-patient - Register a patient to a physician
+router.post("/register-patient", async (req, res) => {
+    const { patientEmail, physicianId } = req.body;
+
+    if (!patientEmail || !physicianId) {
+        console.error("Missing required fields: patientEmail or physicianId.");
+        return res.status(400).json({ message: "Patient email and physician ID are required." });
+    }
+
+    try {
+        console.log(`Attempting to find physician with ID: ${physicianId}`);
+        // Find the physician by ID
+        const physician = await User.findById(physicianId);
+        if (!physician || physician.role !== "physician") {
+            console.error(`Physician not found or invalid role for ID: ${physicianId}`);
+            return res.status(404).json({ message: "Physician not found or invalid role." });
+        }
+        console.log(`Physician found: ${physician.email}, Role: ${physician.role}`);
+
+        console.log(`Attempting to find or create patient with email: ${patientEmail}`);
+        // Find the patient by email
+        let patient = await User.findOne({ email: patientEmail });
+        if (!patient) {
+            console.log(`Patient with email ${patientEmail} not found. `);
+            
+        } else if (patient.role !== "patient") {
+            console.error(`User with email ${patientEmail} is not a patient. Role: ${patient.role}`);
+            return res.status(400).json({ message: "The provided email is not associated with a patient role." });
+        } else {
+            console.log(`Patient found with email: ${patient.email}`);
+        }
+
+        console.log(`Checking for existing relationship between Physician (${physicianId}) and Patient (${patient._id})`);
+        // Check if the patient is already assigned to the physician
+        const existingRelation = await physicianPatient.findOne({
+            physician: physicianId,
+            patient: patient._id,
+        });
+
+        if (existingRelation) {
+            console.error("This patient is already assigned to the physician.");
+            return res.status(409).json({ message: "This patient is already assigned to the physician." });
+        }
+
+        console.log("No existing relationship found. Creating new relationship.");
+        // Create the physician-patient relationship
+        const newRelation = new physicianPatient({
+            physician: physician._id,
+            patient: patient._id,
+        });
+        await newRelation.save();
+
+        console.log(`Relationship created: Physician (${physician.email}) - Patient (${patient.email})`);
+        res.status(201).json({
+            message: `Patient (${patient.email}) registered to Physician (${physician.email}) successfully.`,
+            relation: {
+                physician: physician.email,
+                patient: patient.email,
+            },
+        });
+    } catch (err) {
+        console.error("Error registering patient to physician:", err.message);
+        console.error("Stack trace:", err.stack);
+        res.status(500).json({ message: "Error registering patient to physician.", error: err.message });
+    }
+});
+
+
+
+// GET /users/physicians - Fetch all physicians' emails
+router.get("/physicians", async (req, res) => {
+    try {
+        // Find all users with the role "physician"
+        const physicians = await User.find({ role: "physician" }, "email specialization");
+
+        if (physicians.length === 0) {
+            return res.status(404).json({ message: "No physicians found." });
+        }
+
+        res.status(200).json({
+            message: "Physicians retrieved successfully.",
+            physicians,
+        });
+    } catch (err) {
+        console.error("Error fetching physicians:", err.message);
+        res.status(500).json({ message: "Error fetching physicians.", error: err.message });
+    }
+});
+
+// GET /users/assigned-physicians - Fetch all physicians assigned to the authenticated user
+router.get('/assigned-physicians', authenticateToken, async (req, res) => {
+    try {
+        console.log('Authenticated user:', req.user); // Debug log
+
+        // Assuming the user ID is extracted from a verified JWT and stored in `req.user`
+        const userId = req.user.id;
+
+        // Ensure the user exists
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // Fetch all physician-patient relationships for this user
+        const physicianRelations = await physicianPatient.find({ patient: userId }).populate('physician', 'email specialization');
+
+        // Extract physician information
+        const assignedPhysicians = physicianRelations.map(relation => ({
+            email: relation.physician.email,
+            specialization: relation.physician.specialization,
+        }));
+
+        res.status(200).json({
+            message: 'Assigned physicians retrieved successfully.',
+            assignedPhysicians,
+        });
+    } catch (err) {
+        console.error('Error fetching assigned physicians:', err.message);
+        res.status(500).json({ message: 'Error fetching assigned physicians.', error: err.message });
+    }
+});
+
+// GET /users/patient-devices - Fetch all devices of patients assigned to the physician
+router.get('/patient-devices', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user || user.role !== 'physician') {
+            return res.status(403).json({ message: 'Access denied.' });
+        }
+
+        // Find all patients assigned to the physician
+        const patientRelations = await physicianPatient.find({ physician: req.user.id }).populate('patient');
+        const patientIds = patientRelations.map(rel => rel.patient._id);
+
+        // Fetch devices of all assigned patients
+        const devices = await Device.find({ owner: { $in: patientIds } });
+
+        res.status(200).json({ devices });
+    } catch (err) {
+        console.error('Error fetching patient devices:', err.message);
+        res.status(500).json({ message: 'Error fetching patient devices.', error: err.message });
     }
 });
 
