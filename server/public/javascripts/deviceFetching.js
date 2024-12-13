@@ -16,25 +16,43 @@ export function removeDevice(deviceId) {
         .catch(err => console.error('Error removing device:', err));
 }
 
-// Function to load devices into the user devices table
 export function loadDeviceTables() {
-    // Fetch user-owned devices
-    $.ajax({
-        url: '/users/devices',
-        method: 'GET',
-        contentType: 'application/json',
-        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
+    const userRole = localStorage.getItem('userRole');
 
-        success: function(data) {
-            console.log('User devices data:', data);
-            populateTable('#userDevicesTable tbody', data.devices, true);
-            populateDeviceDropdown(data.devices);
+    if (userRole === 'physician') {
+        // Fetch devices of all patients assigned to the physician
+        $.ajax({
+            url: '/users/patient-devices',
+            method: 'GET',
+            contentType: 'application/json',
+            headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
 
-        },
-        error: function(err) {
-            console.error('Error fetching user devices:', err);
-        }
-    });
+            success: function(data) {
+                console.log('Patient devices data:', data);
+                populateTable('#userDevicesTable tbody', data.devices, false); // No "Remove" action for physicians
+            },
+            error: function(err) {
+                console.error('Error fetching patient devices:', err);
+            },
+        });
+    } else {
+        // Fetch user-owned devices
+        $.ajax({
+            url: '/users/devices',
+            method: 'GET',
+            contentType: 'application/json',
+            headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
+
+            success: function(data) {
+                console.log('User devices data:', data);
+                populateTable('#userDevicesTable tbody', data.devices, true);
+                populateDeviceDropdown(data.devices);
+            },
+            error: function(err) {
+                console.error('Error fetching user devices:', err);
+            },
+        });
+    }
 }
 
 // Function to populate a table with devices
@@ -46,7 +64,6 @@ function populateTable(selector, devices, addActions = false) {
         const row = $('<tr>');
 
         row.append(`<td>${device.deviceId}</td>`);
-        row.append(`<td>${device.ssid}</td>`);
 
         if (addActions) {
             row.append(`
@@ -60,6 +77,23 @@ function populateTable(selector, devices, addActions = false) {
     });
 }
 
+// Function to fetch patient devices (for physicians)
+export function fetchPatientDevices() {
+    $.ajax({
+        url: '/users/patient-devices',
+        method: 'GET',
+        contentType: 'application/json',
+        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
+
+        success: function(data) {
+            console.log('Fetched patient devices:', data);
+            populateTable('#userDevicesTable tbody', data.devices, false); // No "Remove" action for physicians
+        },
+        error: function(err) {
+            console.error('Error fetching patient devices:', err);
+        },
+    });
+}
 
 // Function to search and claim an unclaimed device
 export function searchAndClaimDevice() {
@@ -119,7 +153,8 @@ export function displaySearchResult(device) {
     $('#searchResult').html(resultHtml);
 }
 
-// Function to populate the device dropdown
+
+// Function to populate the device dropdown (for patients only)
 function populateDeviceDropdown(devices) {
     const dropdown = $('#measurementDeviceId');
     dropdown.empty(); // Clear existing options
@@ -129,7 +164,6 @@ function populateDeviceDropdown(devices) {
             dropdown.append(`<option value="${device.deviceId}">${device.deviceId}</option>`);
         });
         dropdown.find('option:first').prop('selected', true); // Select the first device
-
     } else {
         dropdown.append('<option value="">No devices available</option>');
     }
