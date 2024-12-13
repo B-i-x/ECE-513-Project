@@ -133,6 +133,27 @@ function fetchAssignedPhysicians() {
 
 
 $(document).ready(() => {
+    const userRole = localStorage.getItem('userRole'); // Get user role from localStorage
+    const accountTypeDisplay = $('#accountTypeDisplay');
+
+    if (!userRole) {
+        alert('User role not found. Please log in again.');
+        window.location.href = 'login.html'; // Redirect to login if role is missing
+        return;
+    }
+
+    // Display user role in the account type section
+    const roleDisplay = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+    accountTypeDisplay.text(`Account Type: ${roleDisplay}`);
+
+    // Adjust visibility based on role
+    if (userRole === 'physician') {
+        $('.patient-view').hide(); // Hide elements specific to patients
+    } else if (userRole === 'patient') {
+        $('.patient-view').show(); // Ensure patient elements are visible
+    }
+
+    
     fetchAssignedPhysicians();
 
     // Attach event listener to the assign button
