@@ -96,44 +96,81 @@ router.post('/data', async (req, res) => {
     }
 });
 
-// // Route to get timing data for a device
-// router.get("/timing-data", authenticateToken, async (req, res) => {
-//     const { deviceId } = req.query;
+// Helper function to get the device schedule or defaults
+async function getDeviceSchedule(deviceId) {
+    const defaultSchedule = {
+        startTime: 6,
+        endTime: 22,
+        frequencyMin: 30,
+    };
 
-//     if (!deviceId) {
-//         return res.status(400).json({ message: "Device ID is required as a query parameter." });
-//     }
+    const device = await Device.findOne({ deviceId });
+    if (!device) {
+        throw new Error("Device not found.");
+    }
 
-//     try {
-//         // Find the device by deviceId and ensure it belongs to the authenticated user
-//         const device = await Device.findOne({ deviceId, owner: req.user.id });
-//         if (!device) {
-//             return res.status(404).json({ message: "Device not found or not owned by the user." });
-//         }
+    return device.schedule || defaultSchedule;
+}
 
-//         // Default values
-//         const defaultSchedule = {
-//             startTime: 6,
-//             endTime: 22,
-//             frequencyMin: 30,
-//         };
+// Route to get startTime
+router.get("/startTime", async (req, res) => {
+    const { deviceId } = req.query;
 
-//         // Use the device's schedule if it exists, otherwise use defaults
-//         const schedule = device.schedule || defaultSchedule;
+    if (!deviceId) {
+        return res.status(400).json({ message: "Device ID is required as a query parameter." });
+    }
 
-//         res.status(200).json({
-//             message: "Timing data retrieved successfully.",
-//             schedule: {
-//                 startTime: schedule.startTime || defaultSchedule.startTime,
-//                 endTime: schedule.endTime || defaultSchedule.endTime,
-//                 frequencyMin: schedule.frequencyMin || defaultSchedule.frequencyMin,
-//             },
-//         });
-//     } catch (err) {
-//         console.error("Error fetching timing data:", err.message);
-//         res.status(500).json({ message: "Error fetching timing data.", error: err.message });
-//     }
-// });
+    try {
+        const schedule = await getDeviceSchedule(deviceId);
+        res.status(200).json({
+            message: "Start time retrieved successfully.",
+            startTime: schedule.startTime || 6,
+        });
+    } catch (err) {
+        console.error("Error fetching startTime:", err.message);
+        res.status(500).json({ message: "Error fetching startTime.", error: err.message });
+    }
+});
+
+// Route to get endTime
+router.get("/endTime", async (req, res) => {
+    const { deviceId } = req.query;
+
+    if (!deviceId) {
+        return res.status(400).json({ message: "Device ID is required as a query parameter." });
+    }
+
+    try {
+        const schedule = await getDeviceSchedule(deviceId);
+        res.status(200).json({
+            message: "End time retrieved successfully.",
+            endTime: schedule.endTime || 22,
+        });
+    } catch (err) {
+        console.error("Error fetching endTime:", err.message);
+        res.status(500).json({ message: "Error fetching endTime.", error: err.message });
+    }
+});
+
+// Route to get frequencyMin
+router.get("/frequencyMin", async (req, res) => {
+    const { deviceId } = req.query;
+
+    if (!deviceId) {
+        return res.status(400).json({ message: "Device ID is required as a query parameter." });
+    }
+
+    try {
+        const schedule = await getDeviceSchedule(deviceId);
+        res.status(200).json({
+            message: "Frequency min retrieved successfully.",
+            frequencyMin: schedule.frequencyMin || 30,
+        });
+    } catch (err) {
+        console.error("Error fetching frequencyMin:", err.message);
+        res.status(500).json({ message: "Error fetching frequencyMin.", error: err.message });
+    }
+});
 
 
 module.exports = router;
