@@ -438,4 +438,28 @@ router.get('/assigned-physicians', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /users/patient-devices - Fetch all devices of patients assigned to the physician
+router.get('/patient-devices', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user || user.role !== 'physician') {
+            return res.status(403).json({ message: 'Access denied.' });
+        }
+
+        // Find all patients assigned to the physician
+        const patientRelations = await physicianPatient.find({ physician: req.user.id }).populate('patient');
+        const patientIds = patientRelations.map(rel => rel.patient._id);
+
+        // Fetch devices of all assigned patients
+        const devices = await Device.find({ owner: { $in: patientIds } });
+
+        res.status(200).json({ devices });
+    } catch (err) {
+        console.error('Error fetching patient devices:', err.message);
+        res.status(500).json({ message: 'Error fetching patient devices.', error: err.message });
+    }
+});
+
+
 module.exports = router;

@@ -1,7 +1,7 @@
 
 import { renderChart } from './chart_utils.js';
 
-import { removeDevice, loadDeviceTables, searchAndClaimDevice } from './claming.js';
+import { removeDevice, loadDeviceTables, searchAndClaimDevice } from './deviceFetching.js';
 window.removeDevice = removeDevice;
 
 const apiUrl = '/users/data'; // Replace with your API base URL
