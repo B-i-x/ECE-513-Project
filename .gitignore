@@ -16,6 +16,8 @@ local
 # Whitelist README.md at the root level
 !/README.md
 
+docs/automation
+
 # Logs
 logs
 *.log
