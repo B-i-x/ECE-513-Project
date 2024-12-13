@@ -1,6 +1,7 @@
 const express = require("express");
 const { Device, User, Measurement } = require("../models/hearttrack");
 const jwt = require("jsonwebtoken");
+const { json } = require("body-parser");
 require("dotenv").config();
 const router = express.Router();
 
@@ -123,12 +124,13 @@ router.get('/timing-data', async (req, res) => {
         const { startTime, endTime, frequency } = schedule;
 
         // Return the timing data
-        res.json({
+        res.status(201).json({
             deviceId,
             startTime,
             endTime,
             frequency
         });
+        console.log("Timing data sent successfully, response is:", json({ deviceId, startTime, endTime, frequency }));
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Server error" });
