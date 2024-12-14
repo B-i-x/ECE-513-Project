@@ -231,13 +231,26 @@ router.get('/unclaimed-devices', async (req, res) => {
 
 router.get('/devices', authenticateToken, async (req, res) => {
     try {
-        // Fetch devices where the owner matches the authenticated user
-        const devices = await Device.find({ owner: req.user.id }, 'deviceId')
+        if (req.user.role === 'physician') {
+            // Fetch devices of all patients assigned to the physician, including patient emails
+            const devices = await Device.find({ owner: { $exists: true } })
+                .populate('owner', 'email') // Populate the owner's email
+                .select('deviceId owner');
 
-        res.status(200).json({ devices });
+            const devicesWithEmails = devices.map(device => ({
+                deviceId: device.deviceId,
+                patientEmail: device.owner.email, // Extract the owner's email
+            }));
+
+            res.status(200).json({ devices: devicesWithEmails });
+        } else {
+            // Fetch devices owned by the authenticated user
+            const devices = await Device.find({ owner: req.user.id }, 'deviceId');
+            res.status(200).json({ devices });
+        }
     } catch (err) {
-        console.error("Error fetching claimed devices:", err.message);
-        res.status(500).json({ message: "Error fetching claimed devices.", error: err.message });
+        console.error('Error fetching devices:', err.message);
+        res.status(500).json({ message: 'Error fetching devices.', error: err.message });
     }
 });
 
@@ -451,10 +464,16 @@ router.get('/patient-devices', authenticateToken, async (req, res) => {
         const patientRelations = await physicianPatient.find({ physician: req.user.id }).populate('patient');
         const patientIds = patientRelations.map(rel => rel.patient._id);
 
-        // Fetch devices of all assigned patients
-        const devices = await Device.find({ owner: { $in: patientIds } });
+        // Fetch devices of all assigned patients and include patient emails
+        const devices = await Device.find({ owner: { $in: patientIds } })
+            .populate('owner', 'email') // Include email of the patient (owner)
 
-        res.status(200).json({ devices });
+        const devicesWithEmails = devices.map(device => ({
+            deviceId: device.deviceId,
+            patientEmail: device.owner.email, // Extract patient email from the populated owner
+        }));
+
+        res.status(200).json({ devices: devicesWithEmails });
     } catch (err) {
         console.error('Error fetching patient devices:', err.message);
         res.status(500).json({ message: 'Error fetching patient devices.', error: err.message });
