@@ -97,46 +97,79 @@ router.post('/data', async (req, res) => {
     }
 });
 
-// Route to get timing data for a device
+// Helper function to get the device schedule or defaults
+async function getDeviceSchedule(deviceId) {
+    const defaultSchedule = {
+        startTime: 6,
+        endTime: 22,
+        frequencyMin: 30,
+    };
 
+    const device = await Device.findOne({ deviceId });
+    if (!device) {
+        throw new Error("Device not found.");
+    }
 
-// Route to get timing data for a specific device
-router.get('/timing-data', async (req, res) => {
+    return device.schedule || defaultSchedule;
+}
+
+// Route to get startTime
+router.get("/startTime", async (req, res) => {
+    const { deviceId } = req.query;
+
+    if (!deviceId) {
+        return res.status(400).json({ message: "Device ID is required as a query parameter." });
+    }
+
     try {
-        // Get the deviceId from the query parameters
-        const { deviceId } = req.query;
+        const schedule = await getDeviceSchedule(deviceId);
+        res.status(200).json({
+            message: "Start time retrieved successfully.",
+            startTime: schedule.startTime || 6,
+        });
+    } catch (err) {
+        console.error("Error fetching startTime:", err.message);
+        res.status(500).json({ message: "Error fetching startTime.", error: err.message });
+    }
+});
 
-        // Validate that deviceId is provided
-        if (!deviceId) {
-            console.error("Device ID is missing in the request");
-            return res.status(400).json({ error: "Device ID is required" });
-        }
+// Route to get endTime
+router.get("/endTime", async (req, res) => {
+    const { deviceId } = req.query;
 
-        // Find the device in the database
-        const device = await Device.findOne({ deviceId });
+    if (!deviceId) {
+        return res.status(400).json({ message: "Device ID is required as a query parameter." });
+    }
 
-        // If the device is not found, return an error
-        if (!device) {
-            console.error(`Device with ID ${deviceId} not found`);
-            return res.status(404).json({ error: "Device not found" });
-        }
+    try {
+        const schedule = await getDeviceSchedule(deviceId);
+        res.status(200).json({
+            message: "End time retrieved successfully.",
+            endTime: schedule.endTime || 22,
+        });
+    } catch (err) {
+        console.error("Error fetching endTime:", err.message);
+        res.status(500).json({ message: "Error fetching endTime.", error: err.message });
+    }
+});
 
-        // Extract timing data from the device
-        const { schedule } = device;
-        if (!schedule) {
-            console.error(`Schedule not found for device ID ${deviceId}`);
-            return res.status(404).json({ error: "Schedule not found for this device" });
-        }
+// Route to get frequencyMin
+router.get("/frequencyMin", async (req, res) => {
+    const { deviceId } = req.query;
 
-        const { startTime, endTime, frequency } = schedule;
+    if (!deviceId) {
+        return res.status(400).json({ message: "Device ID is required as a query parameter." });
+    }
 
-        // Return the timing data
-        const response = { deviceId, startTime, endTime, frequency };
-        console.log("Timing data response:", response); // Debugging output
-        res.status(200).json(response);
-    } catch (error) {
-        console.error("Error fetching timing data:", error);
-        res.status(500).json({ error: "Server error" });
+    try {
+        const schedule = await getDeviceSchedule(deviceId);
+        res.status(200).json({
+            message: "Frequency min retrieved successfully.",
+            frequencyMin: schedule.frequencyMin || 30,
+        });
+    } catch (err) {
+        console.error("Error fetching frequencyMin:", err.message);
+        res.status(500).json({ message: "Error fetching frequencyMin.", error: err.message });
     }
 });
 
