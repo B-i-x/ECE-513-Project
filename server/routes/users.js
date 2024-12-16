@@ -186,8 +186,13 @@ router.delete("/unclaim-device", authenticateToken, async (req, res) => {
 });
 
 router.post('/claim-device', authenticateToken, async (req, res) => {
-    const { deviceId } = req.body;
+    const sanitizeInput = (input) => {
+        return input.replace(/[^a-zA-Z0-9-_]/g, ''); // Remove all non-alphanumeric, except - and _
+    };
 
+    let { deviceId } = req.body;
+    deviceId = sanitizeInput(deviceId);
+    
     if (!deviceId) {
         return res.status(400).json({ message: "Device ID is required." });
     }
