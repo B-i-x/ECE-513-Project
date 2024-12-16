@@ -24,9 +24,7 @@
   - [Video Links](#video-links)
   - [Login Credentials](#login-credentials)
     - [User Account:](#user-account)
-    - [Physician Account (ECE 513 only):](#physician-account-ece-513-only)
-  - [Challenges and Lessons Learned](#challenges-and-lessons-learned)
-  - [Team Contributions](#team-contributions)
+    - [Physician Account:](#physician-account)
 
 ---
 
@@ -81,17 +79,17 @@ Heart Track is a low-cost IoT-enabled web application for monitoring heart rate 
 
 ## Installation Instructions
 ### Prerequisites:
-1. Install Node.js and MongoDB.
+1. Install Node.js and MongoDB (v6 for AWS).
 2. Clone the project repository:
    git clone https://github.com/your-repo/heart-track.git
    cd heart-track
+3. Once in the server root:
+   npm install
 
 ### Starting the Server:
 1. Run MongoDB.
 2. Start the server:
-   npm start
-
-3. Access the web application at http://localhost:3000.
+   node app.js
 
 ---
 
@@ -160,40 +158,17 @@ Heart Track is a low-cost IoT-enabled web application for monitoring heart rate 
 ---
 
 ## Video Links
-- [Pitch Video]()
 - [Demo Video]()
 
 ---
 
 ## Login Credentials
 ### User Account:
-- **Email**: 
-- **Password**: 
+- **Email**: bix.romero@gmail.com
+- **Password**: 1234
 
-### Physician Account (ECE 513 only):
-- **Email**:
-- **Password**: 
-
----
-
-## Challenges and Lessons Learned
-- **Challenges**:
-  1. 
-  2. 
-  3. 
-
-- **Lessons Learned**:
-  1. 
-  2. 
-  3. 
-
----
-
-## Team Contributions
-| Team Member  | Frontend (%) | Backend (%) | Embedded (%) | Documentation (%) | Demos (%) |
-|-------------------|--------------|-------------|--------------|-------------------|-----------|
-| Alex Romero  | 0 | 0 | 0 | 0 | 0 |
-| Mason Marrero| 0 | 0 | 0 | 0 | 0 |
-| Dasol Ahn    | 0 | 0 | 0 | 0 | 0 |
+### Physician Account:
+- **Email**: a1powell@gmail.com
+- **Password**: 1234
 
 ---
