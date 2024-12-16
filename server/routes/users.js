@@ -92,10 +92,13 @@ router.post('/login', async (req, res) => {
 
 
 const authenticateToken = (req, res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1];
+    const authHeader = req.headers['authorization'];
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "Invalid authorization format." });
+    }
 
+    const token = authHeader.split(' ')[1];
     if (!token) {
-        console.error("No token provided."); // Debug log
         return res.status(401).json({ message: "Access token is required." });
     }
 
